@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { storageService } from '../services/storage';
 import { VoterRecord, User } from '../types';
 import { 
@@ -40,6 +40,8 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [showPartySearchDropdown, setShowPartySearchDropdown] = useState(false);
+  const partySearchInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +56,13 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
     };
     fetchData();
   }, []);
+
+  // Auto-focus search input when a party is selected
+  useEffect(() => {
+    if (selectedParty) {
+      setTimeout(() => partySearchInputRef.current?.focus(), 100);
+    }
+  }, [selectedParty]);
 
   const totalVoters = voters.length;
   const isStandardUser = currentUser.role === 'user';
@@ -296,13 +305,35 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
                              <div className="relative">
                                 <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                                 <input 
+                                    ref={partySearchInputRef}
                                     type="text"
                                     className="block w-full pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-transparent bg-gray-50 focus:bg-white transition-all"
                                     placeholder={`Search ${selectedParty} members...`}
                                     value={searchQuery}
-                                    onChange={e => setSearchQuery(e.target.value)}
-                                    autoFocus
+                                    onChange={e => {
+                                        setSearchQuery(e.target.value);
+                                        if (!showPartySearchDropdown) setShowPartySearchDropdown(true);
+                                    }}
+                                    onFocus={() => setShowPartySearchDropdown(true)}
+                                    onBlur={() => setTimeout(() => setShowPartySearchDropdown(false), 200)}
                                 />
+                                {showPartySearchDropdown && searchQuery && filteredList.length > 0 && (
+                                    <div className="absolute z-30 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                                        {filteredList.slice(0, 7).map(voter => (
+                                            <div
+                                                key={voter.id}
+                                                className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                                onMouseDown={() => {
+                                                    setSearchQuery(voter.fullName);
+                                                    setShowPartySearchDropdown(false);
+                                                }}
+                                            >
+                                                <p className="font-semibold text-sm text-gray-800">{voter.fullName}</p>
+                                                <p className="text-xs text-gray-500">{voter.idCardNumber}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
                              </div>
                         </div>
                         

@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { User, VoterRecord } from '../types';
 import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
@@ -29,6 +29,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [isLoading, setIsLoading] = useState(true);
   
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchInputRef = useRef<HTMLInputElement>(null);
   const [filterStatus, setFilterStatus] = useState<'all' | 'eligible' | 'voted'>('all');
   
   // Voice Search State
@@ -181,6 +183,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         }
     }
   }, [initialVoterId, voters]);
+
+  // Auto-focus search input on load
+  useEffect(() => {
+    if (viewMode === 'list' || viewMode === 'households') {
+      setTimeout(() => searchInputRef.current?.focus(), 100); // Small delay to ensure it's rendered
+    }
+  }, [viewMode]);
 
   // Voice Search Handler
   const handleVoiceSearch = () => {
@@ -799,12 +808,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                     <div className="relative flex-1">
                         <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
                         <input 
+                            ref={searchInputRef}
                             type="text"
                             className="block w-full pl-10 pr-10 py-2 border border-gray-300 rounded-lg leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-1 focus:ring-primary-500 focus:border-primary-500 transition-all"
                             placeholder={viewMode === 'households' ? "Search for address or person..." : "Search by name, ID, island, or address..."}
                             value={searchQuery}
-                            onChange={e => setSearchQuery(e.target.value)}
+                            onChange={e => {
+                                setSearchQuery(e.target.value);
+                                if (!showSearchDropdown) setShowSearchDropdown(true);
+                            }}
+                            onFocus={() => setShowSearchDropdown(true)}
+                            onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)} // Delay to allow click on dropdown
                         />
+                        {showSearchDropdown && searchQuery && filteredVoters.length > 0 && (
+                            <div className="absolute z-30 top-full mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-y-auto">
+                                {filteredVoters.slice(0, 10).map(voter => (
+                                    <div
+                                        key={voter.id}
+                                        className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                        onMouseDown={() => { // Use onMouseDown to fire before onBlur
+                                            handleSelectVoter(voter);
+                                            setSearchQuery(''); 
+                                            setShowSearchDropdown(false);
+                                        }}
+                                    >
+                                        <p className="font-semibold text-sm text-gray-800">{voter.fullName}</p>
+                                        <p className="text-xs text-gray-500">{voter.idCardNumber} &bull; {voter.address}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         <button 
                             onClick={handleVoiceSearch}
                             className={`absolute right-2 top-1/2 transform -translate-y-1/2 p-1.5 rounded-full transition-colors ${isListening ? 'bg-red-100 text-red-600 animate-pulse' : 'hover:bg-gray-100 text-gray-400'}`}
