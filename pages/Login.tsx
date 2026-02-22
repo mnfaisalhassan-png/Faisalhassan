@@ -214,8 +214,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
          <div className="absolute inset-0 bg-gradient-to-br from-primary-900 to-indigo-900 opacity-90 z-10"></div>
          {/* Animated Background Elements */}
          <div className="absolute top-0 left-0 w-full h-full z-0">
-             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float"></div>
-             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-float" style={{animationDelay: '2s'}}></div>
+             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-particles"></div>
+             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-particles" style={{animationDelay: '5s'}}></div>
+             <div className="absolute top-[50%] left-[50%] w-[30%] h-[30%] bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-particles" style={{animationDelay: '10s'}}></div>
+             <div className="absolute bottom-[20%] left-[10%] w-[40%] h-[40%] bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-particles" style={{animationDelay: '15s'}}></div>
          </div>
          
          <div className="relative z-20 flex flex-col justify-center px-12 text-white">
@@ -367,7 +369,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               
               <div className="text-center">
                   <p className="text-xs text-gray-400 leading-relaxed">
-                      Protected by N.Kudafari Council Election System &copy; 2026
+
                       <br/>
                       <span className="opacity-80">Developed by: ffflllaxss</span>
                   </p>
