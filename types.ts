@@ -12,6 +12,7 @@ export interface User {
   email?: string;
   isBlocked?: boolean; // New field for security lockout
   permissions?: string[]; // Granular access control
+  profilePictureUrl?: string; // URL for the user's profile picture
 }
 
 export interface VoterRecord {

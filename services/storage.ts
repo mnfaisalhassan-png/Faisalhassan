@@ -58,7 +58,8 @@ export const storageService = {
       role: u.role,
       email: u.email,
       isBlocked: u.is_blocked || false,
-      permissions: u.permissions || []
+      permissions: u.permissions || [],
+      profilePictureUrl: u.profile_picture_url
     }));
   },
 
@@ -69,7 +70,8 @@ export const storageService = {
       full_name: user.fullName,
       role: user.role,
       is_blocked: user.isBlocked || false,
-      permissions: user.permissions || []
+      permissions: user.permissions || [],
+      profile_picture_url: user.profilePictureUrl
     }]);
     if (error) throw error;
   },
@@ -81,7 +83,8 @@ export const storageService = {
       full_name: user.fullName,
       role: user.role,
       is_blocked: user.isBlocked,
-      permissions: user.permissions || []
+      permissions: user.permissions || [],
+      profile_picture_url: user.profilePictureUrl
     }).eq('id', user.id);
     if (error) throw error;
   },

@@ -55,22 +55,24 @@ const App: React.FC = () => {
     setCurrentPage('login');
   };
 
-  const handleUpdateProfile = async (newPassword: string, newName: string) => {
-    if (!user) return;
+  const handleUpdateProfile = async (newPassword: string, newName: string, newProfilePicture: string | null): Promise<boolean> => {
+    if (!user) return false;
     
     try {
-        const updatedUser = { ...user, fullName: newName, password: newPassword };
+        const updatedUser = { ...user, fullName: newName, password: newPassword, profilePictureUrl: newProfilePicture || user.profilePictureUrl };
         
         // Update in DB
+        // NOTE: This requires a `profile_picture_url` TEXT column in the `users` table.
         await storageService.updateUser(updatedUser);
         
         // Update local state
         setUser(updatedUser);
         storageService.setCurrentUser(updatedUser);
         
-        alert("Profile updated successfully!");
+        return true;
     } catch (e) {
-        alert("Failed to update profile: " + (e as Error).message);
+        console.error("Failed to update profile:", e);
+        return false;
     }
   };
 
@@ -191,15 +193,68 @@ const App: React.FC = () => {
 };
 
 // Internal Profile Form Component
-const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: string) => void }) => {
+const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: string, pp: string | null) => Promise<boolean> }) => {
     const [name, setName] = useState(user.fullName);
     const [pass, setPass] = useState(user.password || '');
+    const [profilePic, setProfilePic] = useState<string | null>(user.profilePictureUrl || null);
+    const [isUpdating, setIsUpdating] = useState(false);
+    const [updateStatus, setUpdateStatus] = useState<{type: 'success' | 'error', message: string} | null>(null);
+
+    useEffect(() => {
+        // Sync state if the user prop changes from parent (e.g., after a successful update)
+        setProfilePic(user.profilePictureUrl || null);
+        setName(user.fullName);
+        setPass(user.password || '');
+    }, [user]);
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                setProfilePic(event.target?.result as string);
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        }
+    };
+
+    const handleSubmit = async () => {
+        setIsUpdating(true);
+        setUpdateStatus(null);
+        const success = await onUpdate(pass, name, profilePic);
+        if (success) {
+            setUpdateStatus({ type: 'success', message: 'Profile updated successfully!' });
+        } else {
+            setUpdateStatus({ type: 'error', message: 'Update failed. The database may need to be updated to support profile pictures.' });
+        }
+        setIsUpdating(false);
+        setTimeout(() => setUpdateStatus(null), 5000); // Clear message after 5s
+    };
     
     return (
-        <div className="space-y-4">
+        <div className="space-y-6">
+            <div className="flex flex-col items-center space-y-4">
+                <div className="relative">
+                    <img 
+                        src={profilePic || `https://ui-avatars.com/api/?name=${user.fullName.replace(' ', '+')}&background=random`}
+                        alt="Profile"
+                        className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md"
+                    />
+                    <label htmlFor="profile-pic-upload" className="absolute -bottom-2 -right-2 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition-transform transform hover:scale-110">
+                        <Lock className="h-4 w-4" />
+                        <input id="profile-pic-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                    </label>
+                </div>
+            </div>
+
+            {updateStatus && (
+                <div className={`p-3 rounded-lg text-sm text-center ${updateStatus.type === 'success' ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'}`}>
+                    {updateStatus.message}
+                </div>
+            )}
+
             <Input label="Full Name" value={name} onChange={e => setName(e.target.value)} />
             <Input label="New Password" value={pass} onChange={e => setPass(e.target.value)} />
-            <Button onClick={() => onUpdate(pass, name)} className="w-full">Update Profile</Button>
+            <Button onClick={handleSubmit} isLoading={isUpdating} className="w-full">Update Profile</Button>
         </div>
     );
 };

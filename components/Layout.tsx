@@ -114,7 +114,6 @@ export const Layout: React.FC<LayoutProps> = ({
           
           <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 space-y-0.5">
             <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">Main Menu</div>
-            <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="dashboard" icon={Users} label="Voter Registry" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             
@@ -182,7 +181,6 @@ export const Layout: React.FC<LayoutProps> = ({
                 </div>
             </div>
             <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="dashboard" icon={Users} label="Registration" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 
