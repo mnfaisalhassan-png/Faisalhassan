@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { User, UserRole, AuditLog } from '../types';
+import { User, UserRole, AuditLog, ALL_PERMISSIONS, Permission } from '../types';
 import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
@@ -16,7 +16,7 @@ interface AdminPanelProps {
 }
 
 // Permission Constants
-const PERMISSIONS = {
+const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
     MENU: [
         { id: 'view_election_overview', label: 'Election Overview' },
         { id: 'view_voter_registry', label: 'Voter Registry' },
@@ -24,7 +24,8 @@ const PERMISSIONS = {
         { id: 'view_chat', label: 'Community Chat' },
         { id: 'view_tasks', label: 'Task Management' },
         { id: 'view_notepad', label: 'Campaign Notes' },
-        { id: 'view_admin_panel', label: 'Admin Panel' }
+        { id: 'view_admin_panel', label: 'Admin Panel' },
+        { id: 'view_change_password', label: 'Change Password Page' }
     ],
     ACTIONS: [
         { id: 'action_create_voter', label: 'Show Registration Form (Create New)' },
@@ -61,14 +62,10 @@ const PERMISSIONS = {
     ]
 };
 
-const getAllPermissionIds = () => [
-    ...PERMISSIONS.MENU.map(p => p.id),
-    ...PERMISSIONS.ACTIONS.map(p => p.id),
-    ...PERMISSIONS.METRICS.map(p => p.id),
-    ...PERMISSIONS.FORM_ACCESS.map(p => p.id)
-];
+const getAllPermissionIds = (): Permission[] => ALL_PERMISSIONS;
 
-const ROLE_DEFAULTS: Record<UserRole, string[]> = {
+
+const ROLE_DEFAULTS: Record<UserRole, Permission[]> = {
     superadmin: getAllPermissionIds(),
     admin: getAllPermissionIds(),
     candidate: [
@@ -324,6 +321,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
         return;
     }
 
+    // Password validation for new password
+    if (password.trim() && password.trim().length < 8) {
+        alert("New password must be at least 8 characters long.");
+        return;
+    }
+
     setIsSaving(true);
 
     try {
@@ -337,14 +340,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
 
         if (editingUser) {
           // Update existing user
-          // Only update password if user typed one
-          const passwordToSave = password.trim() ? password.trim() : editingUser.password;
-          
-          await storageService.updateUser({
+          const updateData: Partial<User> = {
             ...editingUser,
             ...userData,
-            password: passwordToSave
-          });
+          };
+
+          // Only include password in the update if a new one is provided.
+          if (password.trim()) {
+            updateData.password = password.trim();
+          } else {
+            delete updateData.password;
+          }
+          
+          await storageService.updateUser(updateData as User);
           
           await storageService.createAuditLog('update_user', `Updated profile for: ${userData.username}`, currentUser);
         } else {
@@ -695,11 +703,11 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                     placeholder="johndoe"
                   />
                   <Input 
-                    label="Password" 
+                    label="Set New Password"
                     value={password} 
                     onChange={e => setPassword(e.target.value)} 
                     type="text" 
-                    placeholder={editingUser ? (isSuperAdmin ? "Current Password" : "Blank to keep") : "Required"} 
+                    placeholder={editingUser ? "Leave blank to keep current" : "Required"} 
                     disabled={!isSuperAdmin || isSaving}
                   />
               </div>

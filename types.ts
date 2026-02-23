@@ -1,7 +1,7 @@
 
 export type UserRole = 'superadmin' | 'admin' | 'candidate' | 'mamdhoob' | 'user';
 
-export type PageView = 'login' | 'dashboard' | 'election-overview' | 'registrar-party' | 'chat' | 'tasks' | 'notepad' | 'admin-panel' | 'profile' | 'kudafari-election';
+export type PageView = 'login' | 'dashboard' | 'election-overview' | 'registrar-party' | 'chat' | 'tasks' | 'notepad' | 'admin-panel' | 'profile' | 'change-password' | 'kudafari-election';
 
 export interface User {
   id: string;
@@ -75,3 +75,16 @@ export interface AuditLog {
   performedByName?: string;
   timestamp: number;
 }
+
+export const ALL_PERMISSIONS = [
+  'view_election_overview',
+  'view_voter_registry',
+  'view_party_distribution',
+  'view_chat',
+  'view_tasks',
+  'view_notepad',
+  'view_admin_panel',
+  'view_change_password'
+] as const;
+
+export type Permission = typeof ALL_PERMISSIONS[number];

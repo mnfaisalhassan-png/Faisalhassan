@@ -12,7 +12,8 @@ import {
   ClipboardList,
   Flag,
   StickyNote,
-  LucideIcon
+  LucideIcon,
+  KeyRound
 } from 'lucide-react';
 import { User, PageView } from '../types';
 
@@ -26,7 +27,7 @@ interface LayoutProps {
 
 // Helper to check permissions
 // Falls back to role checks if permissions array is missing (backward compatibility)
-const hasPermission = (user: User, permission: string) => {
+const hasPermission = (user: User, permission: Permission | 'profile') => {
     // Super Admin always has access
     if (user.role === 'superadmin') return true;
     if ((user.username || '').toLowerCase() === 'faisalhassan') return true;
@@ -62,7 +63,7 @@ const NavItem = ({
   page: PageView; 
   icon: LucideIcon; 
   label: string; 
-  permission: string;
+  permission: Permission | 'profile';
   user: User;
   activePage: PageView;
   onNavigate: (page: PageView) => void;
@@ -128,6 +129,7 @@ export const Layout: React.FC<LayoutProps> = ({
             <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-4 mb-1 px-3">System</div>
             <NavItem page="profile" icon={UserIcon} label="My Profile" permission="profile" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} /> {/* Everyone has profile */}
             <NavItem page="admin-panel" icon={ShieldCheck} label="Admin Panel" permission="view_admin_panel" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+            <NavItem page="change-password" icon={KeyRound} label="Change Password" permission="view_change_password" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
           </div>
           
           <div className="flex-shrink-0 border-t border-gray-100 p-3 m-2 rounded-xl bg-white/50">
@@ -196,6 +198,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 <div className="h-px bg-gray-100 my-2"></div>
                 <NavItem page="profile" icon={UserIcon} label="My Profile" permission="profile" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="admin-panel" icon={ShieldCheck} label="Admin Panel" permission="view_admin_panel" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
+                <NavItem page="change-password" icon={KeyRound} label="Change Password" permission="view_change_password" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 
                 <button
                     onClick={onLogout}

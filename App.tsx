@@ -10,6 +10,7 @@ import { ChatPage } from './pages/ChatPage';
 import { TasksPage } from './pages/TasksPage';
 import { RegistrarPartyPage } from './pages/RegistrarPartyPage';
 import { NotepadPage } from './pages/NotepadPage';
+import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { KudafariElectionPage } from './pages/KudafariElectionPage';
 import { Layout } from './components/Layout';
 import { Button } from './components/ui/Button';
@@ -55,11 +56,11 @@ const App: React.FC = () => {
     setCurrentPage('login');
   };
 
-  const handleUpdateProfile = async (newPassword: string, newName: string, newProfilePicture: string | null): Promise<boolean> => {
+  const handleUpdateProfile = async (newProfilePicture: string | null): Promise<boolean> => {
     if (!user) return false;
     
     try {
-        const updatedUser = { ...user, fullName: newName, password: newPassword, profilePictureUrl: newProfilePicture || user.profilePictureUrl };
+        const updatedUser = { ...user, profilePictureUrl: newProfilePicture || user.profilePictureUrl };
         
         // Update in DB
         // NOTE: This requires a `profile_picture_url` TEXT column in the `users` table.
@@ -73,6 +74,35 @@ const App: React.FC = () => {
     } catch (e) {
         console.error("Failed to update profile:", e);
         return false;
+    }
+  };
+
+  const handleChangePassword = async (currentPassword: string, newPassword: string): Promise<{success: boolean, message: string}> => {
+    if (!user) return { success: false, message: 'You must be logged in to change your password.' };
+
+    // NOTE: In a real application, this check would be against a hashed password on a secure backend.
+    if (user.password !== currentPassword) {
+        return { success: false, message: 'The current password you entered is incorrect. Please try again.' };
+    }
+
+    if (user.password === newPassword) {
+        return { success: false, message: 'The new password cannot be the same as the old password.' };
+    }
+
+    try {
+        const updatedUser = { ...user, password: newPassword };
+        
+        // Update in the database
+        await storageService.updateUser(updatedUser);
+        
+        // Update the user state in the app and in local storage
+        setUser(updatedUser);
+        storageService.setCurrentUser(updatedUser);
+        
+        return { success: true, message: 'Your password has been updated successfully!' };
+    } catch (e) {
+        console.error("Password update failed:", e);
+        return { success: false, message: 'An unexpected error occurred while updating your password.' };
     }
   };
 
@@ -131,6 +161,9 @@ const App: React.FC = () => {
          );
       }
       return <AdminPanel currentUser={user!} />;
+    }
+    if (currentPage === 'change-password') {
+      return <ChangePasswordPage currentUser={user!} onChangePassword={handleChangePassword} />;
     }
     if (currentPage === 'profile') {
       return (
@@ -193,9 +226,7 @@ const App: React.FC = () => {
 };
 
 // Internal Profile Form Component
-const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: string, pp: string | null) => Promise<boolean> }) => {
-    const [name, setName] = useState(user.fullName);
-    const [pass, setPass] = useState(user.password || '');
+const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (pp: string | null) => Promise<boolean> }) => {
     const [profilePic, setProfilePic] = useState<string | null>(user.profilePictureUrl || null);
     const [isUpdating, setIsUpdating] = useState(false);
     const [updateStatus, setUpdateStatus] = useState<{type: 'success' | 'error', message: string} | null>(null);
@@ -203,8 +234,6 @@ const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: 
     useEffect(() => {
         // Sync state if the user prop changes from parent (e.g., after a successful update)
         setProfilePic(user.profilePictureUrl || null);
-        setName(user.fullName);
-        setPass(user.password || '');
     }, [user]);
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -220,9 +249,9 @@ const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: 
     const handleSubmit = async () => {
         setIsUpdating(true);
         setUpdateStatus(null);
-        const success = await onUpdate(pass, name, profilePic);
+        const success = await onUpdate(profilePic);
         if (success) {
-            setUpdateStatus({ type: 'success', message: 'Profile updated successfully!' });
+            setUpdateStatus({ type: 'success', message: 'Profile picture updated successfully!' });
         } else {
             setUpdateStatus({ type: 'error', message: 'Update failed. The database may need to be updated to support profile pictures.' });
         }
@@ -252,9 +281,7 @@ const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (p: string, n: 
                 </div>
             )}
 
-            <Input label="Full Name" value={name} onChange={e => setName(e.target.value)} />
-            <Input label="New Password" value={pass} onChange={e => setPass(e.target.value)} />
-            <Button onClick={handleSubmit} isLoading={isUpdating} className="w-full">Update Profile</Button>
+            <Button onClick={handleSubmit} isLoading={isUpdating} className="w-full">Update Picture</Button>
         </div>
     );
 };
