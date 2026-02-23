@@ -109,16 +109,11 @@ export const Layout: React.FC<LayoutProps> = ({
                 <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
                     <FileText className="h-5 w-5 text-white" />
                 </div>
-                <div>
-                    <h1 className="text-base font-bold text-gray-900 leading-none">N.Kudafari</h1>
-                    <span className="text-[10px] text-gray-500 font-medium tracking-wider uppercase">Election 2026</span>
-                </div>
              </div>
           </div>
           
           <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 space-y-0.5">
             <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">Main Menu</div>
-            <NavItem page="kudafari-election" icon={Flag} label="N.Kudafari Election 2026" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="dashboard" icon={Users} label="Voter Registry" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
@@ -168,7 +163,6 @@ export const Layout: React.FC<LayoutProps> = ({
             <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg flex items-center justify-center">
                 <FileText className="h-5 w-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">N.Kudafari</span>
         </div>
         <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
           <Menu className="h-6 w-6" />
@@ -185,11 +179,9 @@ export const Layout: React.FC<LayoutProps> = ({
                     <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
                         <FileText className="h-6 w-6 text-white" />
                     </div>
-                    <span className="text-xl font-bold text-gray-900">Menu</span>
                 </div>
             </div>
             <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                <NavItem page="kudafari-election" icon={Flag} label="N.Kudafari Election 2026" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="dashboard" icon={Users} label="Registration" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
