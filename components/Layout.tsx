@@ -114,6 +114,7 @@ export const Layout: React.FC<LayoutProps> = ({
           
           <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 space-y-0.5">
             <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">Main Menu</div>
+            <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="dashboard" icon={Users} label="Voter Registry" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
             
@@ -132,9 +133,11 @@ export const Layout: React.FC<LayoutProps> = ({
           <div className="flex-shrink-0 border-t border-gray-100 p-3 m-2 rounded-xl bg-white/50">
             <div className="flex items-center w-full">
               <div className="flex-shrink-0">
-                 <div className="h-8 w-8 rounded-full bg-gradient-to-r from-gray-200 to-gray-300 flex items-center justify-center text-gray-700 font-bold shadow-inner text-xs">
-                   {user.username.charAt(0).toUpperCase()}
-                 </div>
+                 <img 
+                   className="h-8 w-8 rounded-full object-cover"
+                   src={user.profilePictureUrl || `https://ui-avatars.com/api/?name=${user.fullName.replace(' ', '+')}&background=random`}
+                   alt="User avatar"
+                 />
               </div>
               <div className="ml-2 w-full min-w-0">
                 <p className="text-xs font-semibold text-gray-900 truncate">
@@ -147,7 +150,7 @@ export const Layout: React.FC<LayoutProps> = ({
                         className="text-[10px] font-medium text-red-500 hover:text-red-700 flex items-center transition-colors"
                         title="Logout"
                     >
-                        <LogOut className="h-3 w-3" />
+                        <LogOut className="h-4 w-4" />
                     </button>
                 </div>
               </div>
@@ -181,6 +184,7 @@ export const Layout: React.FC<LayoutProps> = ({
                 </div>
             </div>
             <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
+                <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="dashboard" icon={Users} label="Registration" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
                 
