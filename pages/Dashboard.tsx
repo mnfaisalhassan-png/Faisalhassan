@@ -4,14 +4,13 @@ import { User, VoterRecord } from '../types';
 import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
-import { TextArea } from '../components/ui/TextArea';
 import { Modal } from '../components/ui/Modal';
 import { 
   Search, Plus, Save, Trash2, Edit2, 
-  CheckCircle, XCircle, MapPin, Filter, 
+  CheckCircle, MapPin, 
   User as UserIcon, AlertTriangle, Flag, 
-  CheckSquare, Info, Settings, X, ArrowLeft, ChevronRight,
-  ShieldCheck, Eye, Terminal, Database, MessageCircle,
+  Info, Settings, X, ArrowLeft, ChevronRight,
+  ShieldCheck, Terminal, MessageCircle,
   Download, FileSpreadsheet, Printer, Mic, MicOff,
   Home, List, Sparkles, Phone, Award, Fingerprint, Map, StickyNote
 } from 'lucide-react';
@@ -171,6 +170,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
 
   useEffect(() => {
     refreshData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Handle Initial Voter Deep Link
@@ -182,6 +182,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             if (onClearInitialVoter) onClearInitialVoter();
         }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialVoterId, voters]);
 
   // Auto-focus search input on load

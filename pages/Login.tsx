@@ -208,173 +208,161 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   }
 
   return (
-    <div className="min-h-screen flex overflow-hidden bg-gray-50">
-      {/* Left Side - Visual */}
-      <div className="hidden lg:flex lg:w-1/2 relative bg-primary-900 overflow-hidden">
-         <div className="absolute inset-0 bg-gradient-to-br from-primary-900 to-indigo-900 opacity-90 z-10"></div>
-         {/* Animated Background Elements */}
-         <div className="absolute top-0 left-0 w-full h-full z-0">
-             <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-primary-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-particles"></div>
-             <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-indigo-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-particles" style={{animationDelay: '5s'}}></div>
-             <div className="absolute top-[50%] left-[50%] w-[30%] h-[30%] bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-particles" style={{animationDelay: '10s'}}></div>
-             <div className="absolute bottom-[20%] left-[10%] w-[40%] h-[40%] bg-yellow-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-particles" style={{animationDelay: '15s'}}></div>
-         </div>
-         
-         <div className="relative z-20 flex flex-col justify-center px-12 text-white">
-            <div className="mb-6">
-                <div className="w-16 h-16 bg-white/10 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/20 mb-6 shadow-xl">
-                    <Vote className="w-8 h-8 text-primary-300" />
-                </div>
-                <h1 className="text-5xl font-bold mb-4 tracking-tight">Democracy <br/> Digitalized.</h1>
-                <p className="text-lg text-primary-100 max-w-md font-light leading-relaxed">
-                    The official voter management and real-time analytics platform for the N.Kudafari Council Election 2026.
-                </p>
-            </div>
-            
-            <div className="mt-12 flex items-center space-x-4">
-                 <div className="flex -space-x-4">
-                    {[1,2,3,4].map(i => (
-                        <div key={i} className="w-10 h-10 rounded-full border-2 border-primary-900 bg-primary-200 flex items-center justify-center text-primary-800 text-xs font-bold">
-                            {String.fromCharCode(64+i)}
-                        </div>
-                    ))}
-                 </div>
-                 <div className="text-sm font-medium text-primary-200">
-                    Trusted by Council Members
-                 </div>
-            </div>
-         </div>
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-[#0f172a]">
+      {/* Background Gradients/Glows */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-[20%] -left-[10%] w-[70%] h-[70%] rounded-full bg-blue-900/20 blur-[120px] animate-pulse" style={{animationDuration: '15s'}}></div>
+        <div className="absolute -bottom-[20%] -right-[10%] w-[70%] h-[70%] rounded-full bg-indigo-900/20 blur-[120px] animate-pulse" style={{animationDelay: '5s', animationDuration: '15s'}}></div>
+        <div className="absolute top-[40%] left-[40%] w-[40%] h-[40%] rounded-full bg-cyan-900/10 blur-[100px] animate-pulse" style={{animationDelay: '2s', animationDuration: '10s'}}></div>
       </div>
 
-      {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 relative">
-          <div className="w-full max-w-md space-y-8 animate-fade-in">
-              <div className="text-center lg:text-left">
-                  {/* Attractive Animated Icon */}
-                  <div className="lg:hidden mx-auto w-16 h-16 bg-gradient-to-br from-primary-600 to-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-xl shadow-primary-500/40 animate-float">
-                      <Vote className="w-8 h-8 text-white" />
-                  </div>
-                  
-                  {/* Enhanced Title with Shadow and Gradient */}
-                  <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-4 animate-slide-up">
-                      {setupRequired === 'create-admin' ? (
-                          <span className="text-gray-900">Initialize System</span>
-                      ) : (
-                          <span className="block">
-                              <span className="bg-clip-text text-transparent bg-gradient-to-r from-gray-900 to-gray-700 drop-shadow-sm">
-                                Welcome back
-                              </span>
-                              <br/>
-                              <span className="text-xl md:text-2xl text-primary-700 font-bold mt-2 block drop-shadow-md tracking-tight">
-                                  (N.Kudafari Council Election @2026)
-                              </span>
-                          </span>
-                      )}
-                  </h2>
-                  <p className="mt-2 text-sm text-gray-500">
-                      {setupRequired === 'create-admin' 
-                        ? 'Create the first administrator account to begin.' 
-                        : 'Please enter your credentials to access the dashboard.'}
-                  </p>
-              </div>
+      {/* Main Card */}
+      <div className="relative z-10 w-full max-w-md p-6">
+        {/* Soft gradient glow behind card */}
+        <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/20 to-blue-500/20 blur-3xl transform scale-105 opacity-40 -z-10 rounded-3xl"></div>
+        
+        <div className="bg-slate-900/40 backdrop-blur-xl border border-white/10 rounded-3xl shadow-2xl p-8 overflow-hidden relative">
+            {/* Glossy highlight */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
 
-              <div className="bg-white/80 backdrop-blur-xl rounded-2xl p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-white">
-                  <form className="space-y-6" onSubmit={setupRequired === 'create-admin' ? handleCreateAdmin : handleSubmit}>
-                      {error && (
-                        <div className={`rounded-lg p-4 border animate-slide-up ${isBlocked ? 'bg-red-50 border-red-200' : 'bg-yellow-50 border-yellow-100'}`}>
-                            <div className="flex items-start">
-                                <AlertCircle className={`h-5 w-5 mt-0.5 ${isBlocked ? 'text-red-600' : 'text-yellow-600'}`} />
-                                <div className={`ml-3 text-sm font-medium ${isBlocked ? 'text-red-800' : 'text-yellow-800'}`}>
-                                    {error}
+            {/* Header */}
+            <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-500 to-blue-600 shadow-lg shadow-cyan-500/20 mb-6 animate-float">
+                    <Vote className="w-10 h-10 text-white" />
+                </div>
+                <h2 className="text-3xl font-bold text-white tracking-tight mb-2">
+                    {setupRequired === 'create-admin' ? 'Initialize System' : 'Welcome Back'}
+                </h2>
+                <p className="text-slate-400 text-sm font-medium">
+                    {setupRequired === 'create-admin' 
+                      ? 'Create the first administrator account.' 
+                      : 'N.Kudafari Council Election 2026'}
+                </p>
+            </div>
+
+            {/* Form */}
+            <form className="space-y-6" onSubmit={setupRequired === 'create-admin' ? handleCreateAdmin : handleSubmit}>
+                {/* Error Display */}
+                {error && (
+                    <div className={`rounded-xl p-4 border backdrop-blur-md flex items-start ${isBlocked ? 'bg-red-500/10 border-red-500/20 text-red-200' : 'bg-amber-500/10 border-amber-500/20 text-amber-200'}`}>
+                        <AlertCircle className="h-5 w-5 mt-0.5 shrink-0" />
+                        <div className="ml-3 text-sm font-medium">{error}</div>
+                    </div>
+                )}
+
+                {/* Inputs */}
+                {setupRequired === 'create-admin' ? (
+                     <div className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 ml-1">Admin Name</label>
+                            <input 
+                                value={newAdminName} 
+                                onChange={e => setNewAdminName(e.target.value)} 
+                                className="block w-full px-4 py-3.5 bg-white border border-transparent rounded-xl focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 focus:outline-none text-slate-900 placeholder-slate-400 transition-all font-medium"
+                                placeholder="Full Name"
+                                required 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 ml-1">Username</label>
+                            <input 
+                                value={newAdminUser} 
+                                onChange={e => setNewAdminUser(e.target.value)} 
+                                className="block w-full px-4 py-3.5 bg-white border border-transparent rounded-xl focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 focus:outline-none text-slate-900 placeholder-slate-400 transition-all font-medium"
+                                placeholder="username"
+                                required 
+                            />
+                        </div>
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 ml-1">Password</label>
+                            <input 
+                                type="password"
+                                value={newAdminPass} 
+                                onChange={e => setNewAdminPass(e.target.value)} 
+                                className="block w-full px-4 py-3.5 bg-white border border-transparent rounded-xl focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 focus:outline-none text-slate-900 placeholder-slate-400 transition-all font-medium"
+                                placeholder="••••••••"
+                                required 
+                            />
+                        </div>
+                     </div>
+                ) : (
+                    <div className="space-y-5">
+                        <div>
+                            <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1.5 ml-1">Username</label>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <UserIcon className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
                                 </div>
+                                <input 
+                                    type="text" 
+                                    value={username}
+                                    onChange={e => setUsername(e.target.value)}
+                                    className="block w-full pl-11 pr-4 py-3.5 bg-white border border-transparent rounded-xl focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 focus:outline-none text-slate-900 placeholder-slate-400 transition-all shadow-sm font-medium"
+                                    placeholder="Enter username"
+                                    required
+                                    disabled={isBlocked}
+                                />
                             </div>
                         </div>
-                      )}
 
-                      {setupRequired === 'create-admin' ? (
-                          <div className="space-y-4">
-                              <Input label="Admin Name" value={newAdminName} onChange={e => setNewAdminName(e.target.value)} required placeholder="Full Name" />
-                              <Input label="Username" value={newAdminUser} onChange={e => setNewAdminUser(e.target.value)} required placeholder="username" />
-                              <Input label="Password" type="password" value={newAdminPass} onChange={e => setNewAdminPass(e.target.value)} required placeholder="••••••••" />
-                          </div>
-                      ) : (
-                          <div className="space-y-4">
-                              <div className="space-y-1">
-                                  <label className="text-sm font-medium text-gray-700">Username</label>
-                                  <div className="relative">
-                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                          <UserIcon className="h-5 w-5 text-gray-400" />
-                                      </div>
-                                      <input 
-                                          type="text" 
-                                          value={username}
-                                          onChange={e => setUsername(e.target.value)}
-                                          className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
-                                          placeholder="Enter username"
-                                          required
-                                          disabled={isBlocked}
-                                      />
-                                  </div>
-                              </div>
+                        <div>
+                            <div className="flex justify-between mb-1.5 ml-1">
+                                <label className="block text-xs font-semibold text-slate-300 uppercase tracking-wider">Password</label>
+                                {!setupRequired && (
+                                    <button type="button" onClick={() => setShowForgotMessage(true)} className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 transition-colors">
+                                        Forgot password?
+                                    </button>
+                                )}
+                            </div>
+                            <div className="relative group">
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Lock className="h-5 w-5 text-slate-400 group-focus-within:text-cyan-500 transition-colors" />
+                                </div>
+                                <input 
+                                    type="password" 
+                                    value={password}
+                                    onChange={e => setPassword(e.target.value)}
+                                    className="block w-full pl-11 pr-4 py-3.5 bg-white border border-transparent rounded-xl focus:ring-4 focus:ring-cyan-500/20 focus:border-cyan-400 focus:outline-none text-slate-900 placeholder-slate-400 transition-all shadow-sm font-medium"
+                                    placeholder="••••••••"
+                                    required
+                                    disabled={isBlocked}
+                                />
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                              <div className="space-y-1">
-                                  <div className="flex justify-between">
-                                      <label className="text-sm font-medium text-gray-700">Password</label>
-                                      {!setupRequired && (
-                                          <button type="button" onClick={() => setShowForgotMessage(true)} className="text-sm font-medium text-primary-600 hover:text-primary-500">
-                                              Forgot password?
-                                          </button>
-                                      )}
-                                  </div>
-                                  <div className="relative">
-                                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                          <Lock className="h-5 w-5 text-gray-400" />
-                                      </div>
-                                      <input 
-                                          type="password" 
-                                          value={password}
-                                          onChange={e => setPassword(e.target.value)}
-                                          className="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-all bg-gray-50 focus:bg-white"
-                                          placeholder="••••••••"
-                                          required
-                                          disabled={isBlocked}
-                                      />
-                                  </div>
-                              </div>
-                          </div>
-                      )}
+                {/* Forgot Password Message */}
+                {showForgotMessage && (
+                    <div className="rounded-xl bg-blue-500/10 border border-blue-500/20 p-4 animate-fade-in">
+                        <div className="flex">
+                            <Info className="h-5 w-5 text-blue-400 shrink-0" />
+                            <div className="ml-3 text-sm text-blue-200">
+                                Please contact the System Administrator to reset your credentials.
+                            </div>
+                        </div>
+                    </div>
+                )}
 
-                      {showForgotMessage && (
-                          <div className="rounded-lg bg-blue-50 p-4 border border-blue-100 animate-slide-up">
-                              <div className="flex">
-                                  <Info className="h-5 w-5 text-blue-500" />
-                                  <div className="ml-3 text-sm text-blue-700">
-                                      Please contact the System Administrator to reset your credentials.
-                                  </div>
-                              </div>
-                          </div>
-                      )}
-
-                      <Button 
-                          type="submit" 
-                          className={`w-full h-12 text-base shadow-lg transition-all transform hover:-translate-y-0.5 ${isBlocked ? 'bg-gray-400 cursor-not-allowed hover:bg-gray-400 hover:translate-y-0 shadow-none' : 'shadow-primary-500/30'}`}
-                          isLoading={isLoading}
-                          disabled={isBlocked}
-                      >
-                          {setupRequired === 'create-admin' ? 'Create System Admin' : 'Login'}
-                          {setupRequired !== 'create-admin' && <ChevronRight className="ml-2 h-4 w-4" />}
-                      </Button>
-                  </form>
-              </div>
-              
-              <div className="text-center">
-                  <p className="text-xs text-gray-400 leading-relaxed">
-
-                      <br/>
-                      <span className="opacity-80">Developed by: ffflllaxss</span>
-                  </p>
-              </div>
-          </div>
+                {/* Submit Button */}
+                <Button 
+                    type="submit" 
+                    className={`w-full h-14 text-base font-bold tracking-wide shadow-[0_0_20px_rgba(6,182,212,0.3)] transition-all transform hover:scale-[1.02] active:scale-[0.98] rounded-xl ${isBlocked ? 'bg-slate-700 cursor-not-allowed text-slate-400 shadow-none' : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white border-none'}`}
+                    isLoading={isLoading}
+                    disabled={isBlocked}
+                >
+                    {setupRequired === 'create-admin' ? 'Create System Admin' : 'Sign In'}
+                    {setupRequired !== 'create-admin' && <ChevronRight className="ml-2 h-5 w-5" />}
+                </Button>
+            </form>
+        </div>
+        
+        {/* Footer */}
+        <div className="text-center mt-8">
+            <p className="text-xs text-slate-500 font-medium tracking-wide">
+                SECURE ELECTION SYSTEM • N.KUDAFARI COUNCIL
+            </p>
+        </div>
       </div>
     </div>
   );

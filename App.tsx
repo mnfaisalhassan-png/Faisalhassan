@@ -10,6 +10,7 @@ import { ChatPage } from './pages/ChatPage';
 import { TasksPage } from './pages/TasksPage';
 import { RegistrarPartyPage } from './pages/RegistrarPartyPage';
 import { NotepadPage } from './pages/NotepadPage';
+import { KudafariElectionPage } from './pages/KudafariElectionPage';
 import { Layout } from './components/Layout';
 import { Button } from './components/ui/Button';
 import { Input } from './components/ui/Input';
@@ -103,6 +104,9 @@ const App: React.FC = () => {
     }
     if (currentPage === 'notepad') {
         return <NotepadPage currentUser={user!} />;
+    }
+    if (currentPage === 'kudafari-election') {
+        return <KudafariElectionPage currentUser={user!} onVoterClick={handleVoterClick} />;
     }
     if (currentPage === 'admin-panel') {
       // Access Control: Super Admin or Admin role

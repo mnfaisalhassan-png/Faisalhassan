@@ -97,6 +97,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
   const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
 
   // Export State
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
@@ -331,9 +332,32 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
                              className="block w-full pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-xl focus:ring-primary-500 focus:border-primary-500 transition-shadow"
                              placeholder="Search in this list..."
                              value={searchQuery}
-                             onChange={e => setSearchQuery(e.target.value)}
+                             onChange={e => {
+                                 setSearchQuery(e.target.value);
+                                 if (!showSearchDropdown) setShowSearchDropdown(true);
+                             }}
+                             onFocus={() => setShowSearchDropdown(true)}
+                             onBlur={() => setTimeout(() => setShowSearchDropdown(false), 200)}
                              autoFocus
                          />
+                         {showSearchDropdown && searchQuery && filteredList.length > 0 && (
+                            <div className="absolute z-30 top-full mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                                {filteredList.slice(0, 10).map(voter => (
+                                    <div
+                                        key={voter.id}
+                                        className="px-4 py-3 hover:bg-primary-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                                        onMouseDown={() => {
+                                            if (onVoterClick) onVoterClick(voter.id);
+                                            setSearchQuery('');
+                                            setShowSearchDropdown(false);
+                                        }}
+                                    >
+                                        <p className="font-semibold text-sm text-gray-800">{voter.fullName}</p>
+                                        <p className="text-xs text-gray-500">{voter.idCardNumber} &bull; {voter.address}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="overflow-x-auto">

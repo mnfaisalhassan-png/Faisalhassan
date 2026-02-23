@@ -1,7 +1,7 @@
 
 export type UserRole = 'superadmin' | 'admin' | 'candidate' | 'mamdhoob' | 'user';
 
-export type PageView = 'login' | 'dashboard' | 'election-overview' | 'registrar-party' | 'chat' | 'tasks' | 'notepad' | 'admin-panel' | 'profile';
+export type PageView = 'login' | 'dashboard' | 'election-overview' | 'registrar-party' | 'chat' | 'tasks' | 'notepad' | 'admin-panel' | 'profile' | 'kudafari-election';
 
 export interface User {
   id: string;

@@ -3,12 +3,11 @@ import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { storageService } from '../services/storage';
 import { VoterRecord, User } from '../types';
 import { 
-  Flag, Loader, ArrowLeft, Search, MapPin, Phone, 
+  Flag, Loader, ArrowLeft, Search, MapPin, 
   Download, FileSpreadsheet, Printer, PieChart, 
-  TrendingUp, Users, BarChart3, ChevronRight 
+  TrendingUp, Users, ChevronRight 
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
-import { Modal } from '../components/ui/Modal';
 
 interface RegistrarPartyPageProps {
   currentUser: User;
