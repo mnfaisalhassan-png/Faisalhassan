@@ -360,7 +360,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
         {/* Footer */}
         <div className="text-center mt-8">
             <p className="text-xs text-slate-500 font-medium tracking-wide">
-                SECURE ELECTION SYSTEM • N.KUDAFARI COUNCIL
+                SECURE ELECTION SYSTEM DEVELOPED BY• @FFFLLLAXSS 2026.
             </p>
         </div>
       </div>
