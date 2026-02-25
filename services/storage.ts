@@ -537,5 +537,25 @@ export const storageService = {
   deleteAnnouncement: async (id: string): Promise<void> => {
     const { error } = await supabase.from('announcements').delete().eq('id', id);
     if (error) throw error;
+  },
+
+  uploadProfilePicture: async (userId: string, file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${userId}-${Date.now()}.${fileExt}`;
+    const filePath = `profile-pictures/${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('profile-pictures')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('profile-pictures')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
   }
 };

@@ -145,6 +145,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
   const [permissionSearch, setPermissionSearch] = useState('');
   const [userSearch, setUserSearch] = useState('');
+  const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
+  const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
 
   // Loading States
   const [isSaving, setIsSaving] = useState(false);
@@ -234,6 +236,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
     setRole('user');
     setIsBlockedForm(false);
     setSelectedPermissions(ROLE_DEFAULTS['user']); // Default permissions for new user
+    setProfilePictureFile(null);
+    setProfilePicturePreview(null);
     setIsModalOpen(true);
   };
 
@@ -246,6 +250,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
     setIsBlockedForm(user.isBlocked || false);
     // If permissions are set in DB, use them. Else fall back to role defaults.
     setSelectedPermissions(user.permissions && user.permissions.length > 0 ? user.permissions : ROLE_DEFAULTS[user.role]);
+    setProfilePictureFile(null);
+    setProfilePicturePreview(user.profilePictureUrl || null);
     setIsModalOpen(true);
   };
 
@@ -372,6 +378,18 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
 
     setIsSaving(true);
 
+    let profilePictureUrl = editingUser?.profilePictureUrl || '';
+
+    if (profilePictureFile) {
+      try {
+        profilePictureUrl = await storageService.uploadProfilePicture(editingUser?.id || 'new-user', profilePictureFile);
+      } catch (error) {
+        alert('Failed to upload profile picture. Please try again.');
+        setIsSaving(false);
+        return;
+      }
+    }
+
     try {
         const userData = {
             username: username.trim(),
@@ -379,7 +397,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
             role: role,
             isBlocked: isBlockedForm,
             permissions: selectedPermissions,
-            menuAccess: selectedPermissions.filter(p => PERMISSIONS.MENU_ACCESS.some(m => m.id === p))
+            menuAccess: selectedPermissions.filter(p => PERMISSIONS.MENU_ACCESS.some(m => m.id === p)),
+            profilePictureUrl: profilePictureUrl
         };
 
         if (editingUser) {
@@ -642,9 +661,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                             <td className="px-4 py-2 whitespace-nowrap">
                               <div className="flex items-center">
                                 <div className="relative">
-                                    <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold border ${user.isBlocked ? 'bg-red-100 text-red-600 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
-                                        {user.isBlocked ? <Lock className="h-4 w-4"/> : <span className="text-xs">{user.fullName.charAt(0)}</span>}
-                                    </div>
+                                    {user.profilePictureUrl ? (
+                                        <img src={user.profilePictureUrl} alt={user.fullName} className="h-8 w-8 rounded-full object-cover" />
+                                    ) : (
+                                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold border ${user.isBlocked ? 'bg-red-100 text-red-600 border-red-200' : 'bg-gray-100 text-gray-600 border-gray-200'}`}>
+                                            {user.isBlocked ? <Lock className="h-4 w-4"/> : <span className="text-xs">{user.fullName.charAt(0)}</span>}
+                                        </div>
+                                    )}
                                     {status === 'online' && !user.isBlocked && <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>}
                                 </div>
                                 <div className="ml-3">
@@ -736,31 +759,57 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
         <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
           {/* Basic Info */}
           <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-              <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Credentials</h3>
-              <Input 
-                label="Full Name" 
-                value={fullName} 
-                onChange={e => setFullName(e.target.value)} 
-                disabled={!isSuperAdmin || isSaving}
-                placeholder="John Doe"
-              />
-              <div className="grid grid-cols-2 gap-4">
-                  <Input 
-                    label="Username" 
-                    value={username} 
-                    onChange={e => setUsername(e.target.value)} 
-                    disabled={!isSuperAdmin || isSaving}
-                    placeholder="johndoe"
-                  />
-                  <Input 
-                    label="Set New Password"
-                    value={password} 
-                    onChange={e => setPassword(e.target.value)} 
-                    type="text" 
-                    placeholder={editingUser ? "Leave blank to keep current" : "Required"} 
-                    disabled={!isSuperAdmin || isSaving}
-                  />
+            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Credentials</h3>
+            <div className="flex items-center gap-4">
+              <div className="w-24">
+                <label className="block text-xs font-medium text-gray-700 mb-1">Profile Photo</label>
+                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                  {profilePicturePreview ? (
+                    <img src={profilePicturePreview} alt="Profile" className="w-full h-full object-cover" />
+                  ) : (
+                    <UserIcon className="w-10 h-10 text-gray-400" />
+                  )}
+                </div>
+                <input 
+                  type="file"
+                  accept="image/*"
+                  onChange={e => {
+                    if (e.target.files && e.target.files[0]) {
+                      setProfilePictureFile(e.target.files[0]);
+                      setProfilePicturePreview(URL.createObjectURL(e.target.files[0]));
+                    }
+                  }}
+                  className="text-xs mt-2 w-full"
+                  disabled={!isSuperAdmin || isSaving}
+                />
               </div>
+              <div className="flex-1 space-y-4">
+                <Input 
+                  label="Full Name" 
+                  value={fullName} 
+                  onChange={e => setFullName(e.target.value)} 
+                  disabled={!isSuperAdmin || isSaving}
+                  placeholder="John Doe"
+                />
+                <div className="grid grid-cols-2 gap-4">
+                    <Input 
+                      label="Username" 
+                      value={username} 
+                      onChange={e => setUsername(e.target.value)} 
+                      disabled={!isSuperAdmin || isSaving}
+                      placeholder="johndoe"
+                    />
+                    <Input 
+                      label="Set New Password"
+                      value={password} 
+                      onChange={e => setPassword(e.target.value)} 
+                      type="text" 
+                      placeholder={editingUser ? "Leave blank to keep current" : "Required"} 
+                      disabled={!isSuperAdmin || isSaving}
+                    />
+                </div>
+              </div>
+            </div>
           </div>
           
           {/* Status Toggle */}
@@ -922,7 +971,6 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                   </div>
               </div>
           </div>
-
         </div>
       </Modal>
       
