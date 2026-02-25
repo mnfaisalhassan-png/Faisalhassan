@@ -68,7 +68,9 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'view_metric_total_female_voters', label: 'Show Female Voters for Seema' },
         { id: 'view_metric_r_roshi', label: 'Show R-Roshi Status' },
         { id: 'view_metric_rf_seema', label: 'Show RF-Seema' },
-        { id: 'view_metric_island_turnout', label: 'Show Voter Turnout by Island' }
+        { id: 'view_metric_island_turnout', label: 'Show Voter Turnout by Island' },
+        { id: 'view_metric_candidate_shafaa', label: 'Total Shafaa votes' },
+        { id: 'view_metric_candidate_mashey', label: 'Total Mashey votes' }
     ],
     FORM_ACCESS: [
         { id: 'edit_voter_identity', label: 'Edit Identity (ID, Name, Gender)' },
@@ -83,6 +85,8 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'edit_voter_communicated', label: 'Edit Communicated Checkbox' },
         
         { id: 'edit_voter_notes', label: 'Edit Notepad' },
+        { id: 'edit_voter_shafaa', label: 'Shafaa check box' },
+        { id: 'edit_voter_mashey', label: 'Mashey check box' },
     ]
 };
 

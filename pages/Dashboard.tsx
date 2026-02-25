@@ -67,6 +67,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [sadiq, setSadiq] = useState(false);
   const [rRoshi, setRRoshi] = useState(false);
   const [communicated, setCommunicated] = useState(false);
+  const [shfaa, setShfaa] = useState(false);
+  const [mashey, setMashey] = useState(false);
   const [notes, setNotes] = useState('');
   const [noteInput, setNoteInput] = useState(''); // New state for individual note input
 
@@ -143,6 +145,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const canEditShadda = hasPermission('edit_voter_shadda') || hasPermission('edit_voter_campaign');
   const canEditRRoshi = hasPermission('edit_voter_rroshi') || hasPermission('edit_voter_campaign');
   const canEditCommunicated = hasPermission('edit_voter_communicated') || hasPermission('edit_voter_campaign');
+  const canEditShafaa = hasPermission('edit_voter_shafaa');
+  const canEditMashey = hasPermission('edit_voter_mashey');
 
   // Read Only Mode Logic:
   // If creating new -> Not read only (assuming you can create)
@@ -315,7 +319,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
 
   // Export CSV Handler
   const handleExportCSV = () => {
-    const headers = ['ID Card', 'Full Name', 'Gender', 'Address', 'Island', 'Phone', 'Party', 'Status', 'Sheema', 'Shadda', 'R-Roshi', 'Communicated', 'Notes'];
+    const headers = ['ID Card', 'Full Name', 'Gender', 'Address', 'Island', 'Phone', 'Party', 'Status', 'Sheema', 'Shadda', 'R-Roshi', 'Communicated', 'Shafaa', 'Mashey', 'Notes'];
     const csvContent = [
         headers.join(','),
         ...filteredVoters.map(v => [
@@ -331,6 +335,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             `"${v.sadiq ? 'Yes' : 'No'}"`,
             `"${v.rRoshi ? 'Yes' : 'No'}"`,
             `"${v.communicated ? 'Yes' : 'No'}"`,
+            `"${v.shfaa ? 'Yes' : 'No'}"`,
+            `"${v.mashey ? 'Yes' : 'No'}"`,
             `"${(v.notes || '').replace(/"/g, '""')}"` // Escape quotes
         ].join(','))
     ].join('\n');
@@ -442,6 +448,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setSadiq(false);
     setRRoshi(false);
     setCommunicated(false);
+    setShfaa(false);
+    setMashey(false);
     setNotes('');
     setNoteInput('');
     setErrors({});
@@ -469,6 +477,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setSadiq(voter.sadiq || false);
     setRRoshi(voter.rRoshi || false);
     setCommunicated(voter.communicated || false);
+    setShfaa(voter.shfaa || false);
+    setMashey(voter.mashey || false);
     setNotes(voter.notes || '');
     setErrors({});
     setViewMode('form'); // Switch to form view
@@ -548,6 +558,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             sadiq,
             rRoshi,
             communicated,
+            shfaa,
+            mashey,
             notes, // Saves as comma separated string
             createdAt: Date.now(),
             updatedAt: Date.now()
@@ -1023,6 +1035,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                         Comm.
                                                     </span>
                                                 )}
+                                                {voter.shfaa && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100">
+                                                        Shafaa
+                                                    </span>
+                                                )}
+                                                {voter.mashey && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-50 text-cyan-700 border border-cyan-100">
+                                                        Mashey
+                                                    </span>
+                                                )}
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">
                                                     {voter.registrarParty || 'Independent'}
                                                 </span>
@@ -1302,6 +1324,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                             { label: 'Shadda', state: sadiq, setter: setSadiq, color: 'indigo', icon: ShieldCheck, perm: canEditShadda },
                                             { label: 'R-Roshi', state: rRoshi, setter: setRRoshi, color: 'rose', icon: Award, perm: canEditRRoshi },
                                             { label: 'Comm.', state: communicated, setter: setCommunicated, color: 'orange', icon: MessageCircle, perm: canEditCommunicated },
+                                            { label: 'Shafaa', state: shfaa, setter: setShfaa, color: 'teal', icon: Sparkles, perm: canEditShafaa },
+                                            { label: 'Mashey', state: mashey, setter: setMashey, color: 'cyan', icon: Sparkles, perm: canEditMashey },
                                         ].map((item) => (
                                             <button
                                                 key={item.label}
@@ -1465,6 +1489,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                         <div><span className="text-gray-500">Shadda:</span> {sadiq ? 'Yes' : 'No'}</div>
                         <div><span className="text-gray-500">R-Roshi:</span> {rRoshi ? 'Yes' : 'No'}</div>
                         <div><span className="text-gray-500">Communicated:</span> {communicated ? 'Yes' : 'No'}</div>
+                        <div><span className="text-gray-500">Shafaa:</span> {shfaa ? 'Yes' : 'No'}</div>
+                        <div><span className="text-gray-500">Mashey:</span> {mashey ? 'Yes' : 'No'}</div>
                         {notes && (
                             <div className="col-span-2 text-gray-500 italic mt-1 border-t pt-1">
                                 Notes: {notes.split(',').filter(Boolean).map(n => n.trim()).join(', ')}

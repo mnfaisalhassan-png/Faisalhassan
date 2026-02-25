@@ -4,6 +4,7 @@ import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
+import { TagInput } from '../components/ui/TagInput';
 import { Search, User as UserIcon, CheckCircle, AlertTriangle, Fingerprint, Map, Phone, StickyNote, Vote, Loader, Check, X } from 'lucide-react';
 
 interface AddVoterPageProps {
@@ -25,7 +26,7 @@ export const AddVoterPage: React.FC<AddVoterPageProps> = ({ currentUser }) => {
   const [address, setAddress] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [hasVoted, setHasVoted] = useState(false);
-  const [notes, setNotes] = useState('');
+  const [notes, setNotes] = useState<string[]>([]);
 
   const [notification, setNotification] = useState<{msg: string, type: 'success' | 'error'} | null>(null);
   const [idLookupStatus, setIdLookupStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -77,7 +78,7 @@ export const AddVoterPage: React.FC<AddVoterPageProps> = ({ currentUser }) => {
     setAddress(voter.address);
     setPhoneNumber(voter.phoneNumber || '');
     setHasVoted(voter.hasVoted);
-    setNotes(voter.notes || '');
+    setNotes(Array.isArray(voter.notes) ? voter.notes : (voter.notes ? [voter.notes] : []));
     setShowForm(true);
     setShowDropdown(false);
     setSearchQuery('');
@@ -98,7 +99,7 @@ export const AddVoterPage: React.FC<AddVoterPageProps> = ({ currentUser }) => {
         address,
         phoneNumber,
         hasVoted,
-        notes,
+        notes: notes,
         updatedAt: Date.now(),
       };
 
@@ -184,8 +185,8 @@ export const AddVoterPage: React.FC<AddVoterPageProps> = ({ currentUser }) => {
                             <label htmlFor="hasVotedCheckbox" className="ml-3 text-sm text-gray-700">Has Voted</label>
                         </div>
                     </FormField>
-                    <FormField icon={StickyNote} label="Notepad (Comma Separated)" className="md:col-span-2">
-                        <Input value={notes} onChange={e => setNotes(e.target.value)} placeholder="e.g. note one, note two"/>
+                    <FormField icon={StickyNote} label="Notepad" className="md:col-span-2">
+                        <TagInput value={notes} onChange={setNotes} placeholder="Add a note..."/>
                     </FormField>
                 </div>
                 <div className="mt-8 flex justify-end gap-3">

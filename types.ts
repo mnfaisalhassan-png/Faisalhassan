@@ -80,7 +80,9 @@ export interface VoterRecord {
   rRoshi?: boolean;
   imran?: boolean;
   communicated?: boolean;
-  notes?: string;
+  shfaa?: boolean;
+  mashey?: boolean;
+  notes?: string | string[];
   createdAt: number;
   updatedAt: number;
 }
@@ -159,7 +161,11 @@ export const ALL_PERMISSIONS = [
   'action_update_profile_picture',
   'action_create_announcement',
   'action_edit_announcement',
-  'action_delete_announcement'
+  'action_delete_announcement',
+  'view_metric_candidate_shafaa',
+  'view_metric_candidate_mashey',
+  'edit_voter_shafaa',
+  'edit_voter_mashey'
 ] as const;
 
 export type Permission = typeof ALL_PERMISSIONS[number];

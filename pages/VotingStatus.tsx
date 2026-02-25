@@ -92,7 +92,7 @@ interface ElectionOverviewProps {
 export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser, onVoterClick, refetchTrigger }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey' | null>(null);
   const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -170,6 +170,11 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
   const rRoisOverallPct = totalVoters > 0 ? Math.round((rRoisStats.total / totalVoters) * 100) : 0;
   const rfSeemaOverallPct = totalVoters > 0 ? Math.round((rfSeemaStats.total / totalVoters) * 100) : 0;
 
+  const shafaaStats = calculateCandidateStats(v => v.shfaa);
+  const masheyStats = calculateCandidateStats(v => v.mashey);
+  const shafaaOverallPct = totalVoters > 0 ? Math.round((shafaaStats.total / totalVoters) * 100) : 0;
+  const masheyOverallPct = totalVoters > 0 ? Math.round((masheyStats.total / totalVoters) * 100) : 0;
+
   // Group by Island
   const islandStats = voters.reduce((acc, curr) => {
     if (!acc[curr.island]) {
@@ -190,6 +195,8 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
         if (activeFilter === 'rRois' && !v.rRoshi) return false;
         if (activeFilter === 'rfSeema' && (!v.rRoshi || !v.sheema)) return false; 
         if (activeFilter === 'imran' && !v.imran) return false;
+        if (activeFilter === 'shafaa' && !v.shfaa) return false;
+        if (activeFilter === 'mashey' && !v.mashey) return false;
         if (activeFilter === 'male' && v.gender !== 'Male') return false;
         if (activeFilter === 'female' && v.gender !== 'Female') return false;
         if (activeFilter === 'voted' && !v.hasVoted) return false;
@@ -216,6 +223,8 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
         case 'rRois': return { title: 'R-Rois Voters List', icon: <Star className="mr-2 h-5 w-5 text-orange-600"/> };
         case 'rfSeema': return { title: 'RF - Seema Voters List', icon: <HeartHandshake className="mr-2 h-5 w-5 text-pink-600"/> };
         case 'imran': return { title: 'Imran Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-green-600"/> };
+        case 'shafaa': return { title: 'Shafaa Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-teal-600"/> };
+        case 'mashey': return { title: 'Mashey Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-cyan-600"/> };
         case 'male': return { title: 'Male Voters List', icon: <Users className="mr-2 h-5 w-5 text-blue-600"/> };
         case 'female': return { title: 'Female Voters List', icon: <Users className="mr-2 h-5 w-5 text-pink-600"/> };
         case 'total': return { title: 'Total Voters List', icon: <Users className="mr-2 h-5 w-5 text-slate-600"/> };
@@ -225,7 +234,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
     }
   };
 
-  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female') => {
+  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey') => {
       setSelectedIsland(null);
       setSelectedParty(null);
       setActiveFilter(filter);
@@ -516,6 +525,28 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
                 icon={HeartHandshake} 
                 color="pink" 
                 onClick={() => handleFilterClick('rfSeema')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_shafaa') && (
+              <StatCard 
+                title="Total Shafaa Votes" 
+                value={shafaaStats.total} 
+                subValue={`${shafaaOverallPct}%`}
+                icon={CheckSquare} 
+                color="blue" 
+                onClick={() => handleFilterClick('shafaa')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_mashey') && (
+              <StatCard 
+                title="Total Mashey Votes" 
+                value={masheyStats.total} 
+                subValue={`${masheyOverallPct}%`}
+                icon={CheckSquare} 
+                color="green" 
+                onClick={() => handleFilterClick('mashey')}
               />
           )}
       </div>
