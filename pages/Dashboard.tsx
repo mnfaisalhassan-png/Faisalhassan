@@ -8,12 +8,19 @@ import { Modal } from '../components/ui/Modal';
 import { 
   Search, Plus, Save, Trash2, Edit2, 
   CheckCircle, MapPin, 
-  User as UserIcon, AlertTriangle, Flag, 
-  Info, Settings, X, ArrowLeft, ChevronRight,
-  ShieldCheck, Terminal, MessageCircle,
+  User as UserIcon, AlertTriangle, 
+  Info, X, ArrowLeft, ChevronRight,
+  ShieldCheck,
   Download, FileSpreadsheet, Printer, Mic, MicOff,
-  Home, List, Sparkles, Phone, Award, Fingerprint, Map, StickyNote
+  Home, List, Sparkles, Phone, Award, Fingerprint, Map, StickyNote,
+  Flag, MessageCircle, Settings, Terminal
 } from 'lucide-react';
+
+// Define window interface for SpeechRecognition to avoid 'any' type
+interface WindowWithSpeechRecognition extends Window {
+  SpeechRecognition: typeof SpeechRecognition;
+  webkitSpeechRecognition: typeof SpeechRecognition;
+}
 
 interface DashboardProps {
   currentUser: User;
@@ -199,7 +206,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         return;
     }
 
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    const SpeechRecognition = (window as WindowWithSpeechRecognition).SpeechRecognition || (window as WindowWithSpeechRecognition).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
 
     recognition.continuous = false;
@@ -214,7 +221,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         setIsListening(false);
     };
 
-    recognition.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
         const transcript = event.results[0][0].transcript;
         setSearchQuery(transcript);
     };
@@ -546,7 +553,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             updatedAt: Date.now()
         };
 
-        let logError: any = null;
+        let logError: { code?: string; message?: string } | null = null;
 
         if (formMode === 'create') {
             if (!canCreate) {
@@ -582,7 +589,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         setViewMode('list');
         resetForm();
 
-    } catch (error: any) {
+    } catch (error) {
         console.error(error);
         // Error code 42703 is undefined_column in Postgres
         const errMsg = error.message || '';
@@ -654,7 +661,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         setNewIslandName('');
         setIsAddIslandModalOpen(false);
         setNotification({ msg: 'Island added successfully!', type: 'success' });
-      } catch (e) {
+      } catch {
         setNotification({ msg: 'Failed to add island', type: 'error' });
       }
       setTimeout(() => setNotification(null), 3000);
@@ -671,13 +678,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         setNewPartyName('');
         setIsAddPartyModalOpen(false);
         setNotification({ msg: 'Party added successfully!', type: 'success' });
-      } catch(e) {
+      } catch {
         setNotification({ msg: 'Failed to add party', type: 'error' });
       }
       setTimeout(() => setNotification(null), 3000);
     };
 
-  const saveManagedItem = async (index: number) => {
+  const saveManagedItem = async () => {
       alert("Renaming items is disabled in this version.");
       setEditingItemIndex(null);
   }
@@ -700,7 +707,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         }
         await refreshData();
         setNotification({ msg: 'Item deleted from list', type: 'success' });
-    } catch (e) {
+    } catch {
         setNotification({ msg: 'Failed to delete item', type: 'error' });
     }
     setTimeout(() => setNotification(null), 3000);

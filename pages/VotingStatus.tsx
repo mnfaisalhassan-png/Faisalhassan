@@ -15,9 +15,7 @@ import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 
-// ... (rest of the imports)
 
-// ... (rest of the component)
 
 
 
@@ -88,9 +86,10 @@ const StatCard: React.FC<StatCardProps> = ({ title, value, subValue, icon: Icon,
 interface ElectionOverviewProps {
     currentUser: User;
     onVoterClick?: (id: string) => void;
+    refetchTrigger?: number;
 }
 
-export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser, onVoterClick }) => {
+export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser, onVoterClick, refetchTrigger }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | null>(null);
@@ -140,7 +139,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refetchTrigger]);
 
   // General Stats
   const totalVoters = voters.length;

@@ -3,8 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { User } from '../types';
 import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
-import { Input } from '../components/ui/Input';
-import { Lock, User as UserIcon, AlertCircle, Database, Shield, Info, Vote, ChevronRight } from 'lucide-react';
+import { Lock, User as UserIcon, AlertCircle, Database, Info, Vote, ChevronRight } from 'lucide-react';
 
 interface LoginProps {
   onLoginSuccess: (user: User) => void;
@@ -47,9 +46,10 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
           } else {
               setSetupRequired('none');
           }
-      } catch (e: any) {
-          console.error("System Check Error:", e);
-          if (e.message && (e.message.includes('relation') || e.message.includes('does not exist'))) {
+      } catch (e) {
+          const error = e as { message?: string };
+          console.error("System Check Error:", error);
+          if (error.message && (error.message.includes('relation') || error.message.includes('does not exist'))) {
              setSetupRequired('db-error');
           } else {
              setSetupRequired('none');
@@ -172,8 +172,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
               setSetupRequired('none');
               setUsername(newAdminUser);
           }
-      } catch (e: any) {
-          setError("Failed to create admin: " + e.message);
+      } catch (e) {
+          setError("Failed to create admin: " + (e as Error).message);
       } finally {
           setIsLoading(false);
       }

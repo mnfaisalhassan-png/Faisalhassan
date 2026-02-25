@@ -3,19 +3,27 @@ import React, { useState, useEffect } from 'react';
 import { storageService } from './services/storage';
 import { User, PageView } from './types';
 import { Login } from './pages/Login';
-import { Dashboard } from './pages/Dashboard';
+import { VotersDirectoryPage } from './pages/VotersDirectoryPage';
 import { AdminPanel } from './pages/AdminPanel';
 import { ElectionOverview } from './pages/VotingStatus';
 import { ChatPage } from './pages/ChatPage';
-import { TasksPage } from './pages/TasksPage';
+
 import { RegistrarPartyPage } from './pages/RegistrarPartyPage';
 import { NotepadPage } from './pages/NotepadPage';
 import { ChangePasswordPage } from './pages/ChangePasswordPage';
 import { KudafariElectionPage } from './pages/KudafariElectionPage';
+import { AddVoterPage } from './pages/AddVoterPage';
+import { LiveResultsPage } from './pages/LiveResultsPage';
+import { QuickSummaryPage } from './pages/QuickSummaryPage';
+import { SecuritySettingsPage } from './pages/SecuritySettingsPage';
+import { ProfilePage } from './pages/ProfilePage';
+import { AnnouncementsPage } from './pages/AnnouncementsPage';
+import { AuditLogsPage } from './pages/AuditLogsPage';
+import { PlaceholderPage } from './pages/PlaceholderPage';
 import { Layout } from './components/Layout';
-import { Button } from './components/ui/Button';
-import { Input } from './components/ui/Input';
-import { Lock, CheckCircle } from 'lucide-react';
+
+
+import { CheckCircle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -113,76 +121,49 @@ const App: React.FC = () => {
 
   // Simple Page Router
   const renderContent = () => {
-    if (currentPage === 'dashboard') {
-      return (
-        <Dashboard 
-            currentUser={user!} 
-            initialVoterId={targetVoterId}
-            onClearInitialVoter={() => setTargetVoterId(null)}
-        />
-      );
+    switch (currentPage) {
+      // Dashboard
+      case 'election-overview': return <ElectionOverview currentUser={user!} onVoterClick={handleVoterClick} />;
+            case 'live-results': return <LiveResultsPage currentUser={user!} />;
+      case 'turnout-analytics': return <PlaceholderPage title="Turnout Analytics" />;
+            case 'quick-summary': return <QuickSummaryPage onNavigate={setCurrentPage} />;
+
+      // Voter Management
+      case 'voter-registry': return <VotersDirectoryPage currentUser={user!} initialVoterId={targetVoterId} onClearInitialVoter={() => setTargetVoterId(null)} />;
+            case 'add-voter': return <AddVoterPage currentUser={user!} />;
+      case 'import-export-voters': return <PlaceholderPage title="Import / Export Voters" />;
+      case 'search-filter-voters': return <PlaceholderPage title="Search & Filter" />;
+      case 'suspended-inactive-voters': return <PlaceholderPage title="Suspended / Inactive Voters" />;
+
+      // Candidates & Parties
+      case 'candidates': return <PlaceholderPage title="Candidates" />;
+      case 'party-distribution': return <RegistrarPartyPage currentUser={user!} />;
+      case 'candidate-performance': return <PlaceholderPage title="Candidate Performance" />;
+
+      // Results & Reports
+      case 'real-time-results': return <PlaceholderPage title="Real-Time Results" />;
+      case 'detailed-reports': return <PlaceholderPage title="Detailed Reports" />;
+      case 'export-results': return <PlaceholderPage title="Export Results" />;
+      case 'historical-data': return <PlaceholderPage title="Historical Data" />;
+
+      // Communication
+      case 'community-chat': 
+        if (!user) return <PlaceholderPage title="Login Required" />;
+        return <ChatPage currentUser={user} />;
+      case 'announcements': return <AnnouncementsPage currentUser={user!} />;
+      case 'campaign-notes': return <NotepadPage currentUser={user!} />;
+
+      // System & Settings
+      case 'profile': return <ProfilePage user={user!} onUpdate={handleUpdateProfile} />;
+      case 'change-password': return <ChangePasswordPage currentUser={user!} onChangePassword={handleChangePassword} />;
+      case 'user-roles-permissions': return <AdminPanel currentUser={user!} />;
+            case 'security-settings': return <SecuritySettingsPage onNavigate={setCurrentPage} />;
+      case 'audit-logs': return <AuditLogsPage currentUser={user!} />;
+
+      // Legacy & Default
+      case 'kudafari-election': return <KudafariElectionPage currentUser={user!} onVoterClick={handleVoterClick} />;
+      default: return <ElectionOverview currentUser={user!} onVoterClick={handleVoterClick} />;
     }
-    if (currentPage === 'election-overview') {
-      return <ElectionOverview currentUser={user!} onVoterClick={handleVoterClick} />;
-    }
-    if (currentPage === 'registrar-party') {
-      return <RegistrarPartyPage currentUser={user!} />;
-    }
-    if (currentPage === 'chat') {
-        return <ChatPage currentUser={user!} />;
-    }
-    if (currentPage === 'tasks') {
-        return <TasksPage currentUser={user!} />;
-    }
-    if (currentPage === 'notepad') {
-        return <NotepadPage currentUser={user!} />;
-    }
-    if (currentPage === 'kudafari-election') {
-        return <KudafariElectionPage currentUser={user!} onVoterClick={handleVoterClick} />;
-    }
-    if (currentPage === 'admin-panel') {
-      // Access Control: Super Admin or Admin role
-      // Note: AdminPanel component handles granular permission (Read-only vs Write)
-      const isAuthorized = user?.role === 'superadmin' || user?.role === 'admin' || (user?.username || '').toLowerCase() === 'faisalhassan';
-      
-      if (!isAuthorized) {
-         // Redirect unauthorized
-         return (
-            <div className="flex flex-col items-center justify-center h-[50vh] text-center p-8">
-                <div className="bg-red-100 p-4 rounded-full mb-4">
-                    <Lock className="h-8 w-8 text-red-600" />
-                </div>
-                <h2 className="text-xl font-bold text-gray-900">Access Denied</h2>
-                <p className="text-gray-500 mt-2">You do not have permission to view the Admin Panel.</p>
-                <Button variant="secondary" className="mt-6" onClick={() => setCurrentPage('election-overview')}>
-                    Return to Dashboard
-                </Button>
-            </div>
-         );
-      }
-      return <AdminPanel currentUser={user!} />;
-    }
-    if (currentPage === 'change-password') {
-      return <ChangePasswordPage currentUser={user!} onChangePassword={handleChangePassword} />;
-    }
-    if (currentPage === 'profile') {
-      return (
-        <div className="max-w-md mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-200">
-           <div className="text-center mb-6">
-              <div className="mx-auto h-16 w-16 bg-indigo-100 rounded-full flex items-center justify-center mb-4">
-                 <Lock className="h-8 w-8 text-indigo-600" />
-              </div>
-              <h2 className="text-2xl font-bold text-gray-900">Profile Settings</h2>
-           </div>
-           
-           <ProfileForm 
-             user={user!} 
-             onUpdate={handleUpdateProfile} 
-           />
-        </div>
-      );
-    }
-    return <div>Page not found</div>;
   };
 
   if (isLoading) {
@@ -225,65 +206,5 @@ const App: React.FC = () => {
   );
 };
 
-// Internal Profile Form Component
-const ProfileForm = ({ user, onUpdate }: { user: User, onUpdate: (pp: string | null) => Promise<boolean> }) => {
-    const [profilePic, setProfilePic] = useState<string | null>(user.profilePictureUrl || null);
-    const [isUpdating, setIsUpdating] = useState(false);
-    const [updateStatus, setUpdateStatus] = useState<{type: 'success' | 'error', message: string} | null>(null);
-
-    useEffect(() => {
-        // Sync state if the user prop changes from parent (e.g., after a successful update)
-        setProfilePic(user.profilePictureUrl || null);
-    }, [user]);
-
-    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                setProfilePic(event.target?.result as string);
-            };
-            reader.readAsDataURL(e.target.files[0]);
-        }
-    };
-
-    const handleSubmit = async () => {
-        setIsUpdating(true);
-        setUpdateStatus(null);
-        const success = await onUpdate(profilePic);
-        if (success) {
-            setUpdateStatus({ type: 'success', message: 'Profile picture updated successfully!' });
-        } else {
-            setUpdateStatus({ type: 'error', message: 'Update failed. The database may need to be updated to support profile pictures.' });
-        }
-        setIsUpdating(false);
-        setTimeout(() => setUpdateStatus(null), 5000); // Clear message after 5s
-    };
-    
-    return (
-        <div className="space-y-6">
-            <div className="flex flex-col items-center space-y-4">
-                <div className="relative">
-                    <img 
-                        src={profilePic || `https://ui-avatars.com/api/?name=${user.fullName.replace(' ', '+')}&background=random`}
-                        alt="Profile"
-                        className="w-24 h-24 rounded-full object-cover border-4 border-indigo-200 shadow-md"
-                    />
-                    <label htmlFor="profile-pic-upload" className="absolute -bottom-2 -right-2 bg-indigo-600 text-white p-2 rounded-full cursor-pointer hover:bg-indigo-700 transition-transform transform hover:scale-110">
-                        <Lock className="h-4 w-4" />
-                        <input id="profile-pic-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                    </label>
-                </div>
-            </div>
-
-            {updateStatus && (
-                <div className={`p-3 rounded-lg text-sm text-center ${updateStatus.type === 'success' ? 'bg-green-100 text-green-900' : 'bg-red-100 text-red-900'}`}>
-                    {updateStatus.message}
-                </div>
-            )}
-
-            <Button onClick={handleSubmit} isLoading={isUpdating} className="w-full">Update Picture</Button>
-        </div>
-    );
-};
 
 export default App;

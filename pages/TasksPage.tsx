@@ -8,10 +8,9 @@ import { TextArea } from '../components/ui/TextArea';
 import { Modal } from '../components/ui/Modal';
 import { 
   ClipboardList, Plus, CheckCircle, Circle, 
-  Trash2, User as UserIcon, Calendar, 
-  Database, Terminal, AlertTriangle, Shield,
-  Filter, LayoutGrid, List as ListIcon, Clock,
-  CheckSquare, BarChart3, ArrowRight
+  Trash2, User as UserIcon, 
+  Database, Terminal, AlertTriangle, Clock,
+  CheckSquare
 } from 'lucide-react';
 
 interface TasksPageProps {
@@ -40,7 +39,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
   
   // Error / Setup State
   const [dbError, setDbError] = useState(false);
-  const [errorMsg, setErrorMsg] = useState('');
+  
 
   const isSuperAdmin = currentUser.role === 'superadmin' || currentUser.username.toLowerCase() === 'faisalhassan';
   const isAdmin = isSuperAdmin || currentUser.role === 'admin';
@@ -53,8 +52,9 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
       const tasksData = await storageService.getTasks();
       setTasks(tasksData);
       setDbError(false);
-    } catch (e: any) {
-      console.error("Fetch Tasks Error:", e);
+    } catch (e) {
+      const error = e as { code?: string; message?: string };
+      console.error("Fetch Tasks Error:", error);
       if (
         e.code === '42P01' || 
         (e.message && (
@@ -64,8 +64,6 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
         ))
       ) {
           setDbError(true);
-      } else {
-          setErrorMsg("Failed to load tasks.");
       }
     } finally {
       setIsLoading(false);
@@ -156,9 +154,10 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
       });
       handleCloseModal();
       fetchData();
-    } catch (e: any) {
-      console.error("Create Task Error:", e);
-      const msg = e.message || "Failed to save task.";
+    } catch (e) {
+      const error = e as { message?: string };
+      console.error("Create Task Error:", error);
+      const msg = error.message || "Failed to save task.";
       if (
         msg.includes('Could not find the table') || 
         msg.includes('schema cache') || 
@@ -188,7 +187,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
       const newStatus = task.status === 'pending' ? 'completed' : 'pending';
       await storageService.updateTaskStatus(task.id, newStatus);
       setTasks(prev => prev.map(t => t.id === task.id ? { ...t, status: newStatus } : t));
-    } catch (e) {
+    } catch {
       alert("Failed to update status");
       fetchData();
     }
@@ -208,7 +207,7 @@ export const TasksPage: React.FC<TasksPageProps> = ({ currentUser }) => {
       setTasks(prev => prev.filter(t => t.id !== taskToDelete));
       setIsDeleteModalOpen(false);
       setTaskToDelete(null);
-    } catch (e) {
+    } catch {
       alert("Failed to delete task");
     }
   };

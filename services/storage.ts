@@ -1,7 +1,8 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { STORAGE_KEYS, ISLANDS, DEFAULT_PARTIES, ADMIN_CREDENTIALS } from '../constants';
-import { User, VoterRecord, ChatMessage, Task, AuditLog, AppNote } from '../types';
+import { STORAGE_KEYS, ISLANDS, DEFAULT_PARTIES } from '../constants';
+import { User, VoterRecord, ChatMessage, Task, AuditLog, AppNote, Announcement } from '../types';
+import { MOCK_ANNOUNCEMENTS } from './mock-data';
 
 // Supabase Configuration
 const SUPABASE_URL = 'https://hrvljfayyfmvoywiklgk.supabase.co';
@@ -50,7 +51,7 @@ export const storageService = {
       console.error('Error fetching users:', error);
       return [];
     }
-    return data.map((u: any) => ({
+    return data.map((u: Record<string, unknown>) => ({
       id: u.id,
       username: u.username,
       password: u.password,
@@ -115,7 +116,7 @@ export const storageService = {
       console.error('Error fetching voters:', error);
       return [];
     }
-    return data.map((v: any) => ({
+    return data.map((v: Record<string, unknown>) => ({
       id: v.id,
       idCardNumber: v.id_card_number,
       fullName: v.full_name,
@@ -180,13 +181,31 @@ export const storageService = {
     if (error) throw error;
   },
 
+  getPartyStats: async (): Promise<Record<string, { total: number; voted: number }>> => {
+    const { data, error } = await supabase.rpc('get_party_stats');
+
+    if (error) {
+      console.error('Error fetching party stats:', error);
+      return {};
+    }
+
+    const stats: Record<string, { total: number; voted: number }> = {};
+    data.forEach((row: any) => {
+      stats[row.registrar_party] = {
+        total: row.total_voters,
+        voted: row.voted_voters,
+      };
+    });
+    return stats;
+  },
+
   // --- SETTINGS: ISLANDS & PARTIES (Supabase) ---
 
   getIslands: async (): Promise<string[]> => {
     const { data, error } = await supabase.from('islands').select('name').order('name');
     if (error || !data) return ISLANDS;
     if (data.length === 0) return ISLANDS;
-    return data.map((i: any) => i.name);
+    return data.map((i: { name: string }) => i.name);
   },
 
   addIsland: async (name: string) => {
@@ -203,7 +222,7 @@ export const storageService = {
     const { data, error } = await supabase.from('parties').select('name').order('name');
     if (error || !data) return DEFAULT_PARTIES;
     if (data.length === 0) return DEFAULT_PARTIES;
-    return data.map((p: any) => p.name);
+    return data.map((p: { name: string }) => p.name);
   },
 
   addParty: async (name: string) => {
@@ -229,8 +248,8 @@ export const storageService = {
 
     if (error || !data) return defaults;
 
-    const startRow = data.find((r: any) => r.key === 'election_start');
-    const endRow = data.find((r: any) => r.key === 'election_end');
+    const startRow = data.find((r: { key: string }) => r.key === 'election_start');
+    const endRow = data.find((r: { key: string }) => r.key === 'election_end');
 
     return {
         electionStart: startRow ? parseInt(startRow.value) : defaults.electionStart,
@@ -263,7 +282,7 @@ export const storageService = {
 
     if (!data) return [];
 
-    return data.reverse().map((m: any) => ({
+    return data.reverse().map((m: Record<string, unknown>) => ({
       id: m.id,
       userId: m.user_id,
       userName: m.user_name,
@@ -302,7 +321,7 @@ export const storageService = {
 
     if (error) throw error;
 
-    return data.map((t: any) => ({
+    return data.map((t: Record<string, unknown>) => ({
       id: t.id,
       title: t.title,
       description: t.description,
@@ -347,7 +366,7 @@ export const storageService = {
 
     if (error) throw error;
 
-    return data.map((n: any) => ({
+    return data.map((n: Record<string, unknown>) => ({
       id: n.id,
       userId: n.user_id,
       userName: n.user_name,
@@ -401,7 +420,7 @@ export const storageService = {
         return [];
     }
 
-    return data.map((l: any) => ({
+    return data.map((l: Record<string, unknown>) => ({
       id: l.id,
       action: l.action,
       details: l.details,
@@ -426,5 +445,97 @@ export const storageService = {
         return error;
     }
     return null;
+  },
+
+  // --- ANNOUNCEMENTS (Supabase) ---
+
+  getAnnouncements: async (): Promise<Announcement[]> => {
+    const { data, error } = await supabase
+      .from('announcements')
+      .select('*')
+      .order('date', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching announcements:', error);
+      // Fallback to mock data if table doesn't exist yet, to prevent app crash during dev
+      return MOCK_ANNOUNCEMENTS;
+    }
+
+    if (!data) return [];
+
+    return data.map((a: Record<string, unknown>) => ({
+      id: a.id as string,
+      title: a.title as string,
+      content: a.content as string,
+      category: a.category as Announcement['category'],
+      author: a.author as string,
+      date: a.date as string,
+      isPinned: a.is_pinned as boolean,
+      isUrgent: a.is_urgent as boolean
+    }));
+  },
+
+  createAnnouncement: async (announcement: Omit<Announcement, 'id'>): Promise<Announcement> => {
+    const { data, error } = await supabase
+      .from('announcements')
+      .insert([{
+        title: announcement.title,
+        content: announcement.content,
+        category: announcement.category,
+        author: announcement.author,
+        date: announcement.date,
+        is_pinned: announcement.isPinned,
+        is_urgent: announcement.isUrgent
+      }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      title: data.title,
+      content: data.content,
+      category: data.category,
+      author: data.author,
+      date: data.date,
+      isPinned: data.is_pinned,
+      isUrgent: data.is_urgent
+    };
+  },
+
+  updateAnnouncement: async (announcement: Announcement): Promise<Announcement> => {
+    const { data, error } = await supabase
+      .from('announcements')
+      .update({
+        title: announcement.title,
+        content: announcement.content,
+        category: announcement.category,
+        author: announcement.author,
+        date: announcement.date,
+        is_pinned: announcement.isPinned,
+        is_urgent: announcement.isUrgent
+      })
+      .eq('id', announcement.id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      id: data.id,
+      title: data.title,
+      content: data.content,
+      category: data.category,
+      author: data.author,
+      date: data.date,
+      isPinned: data.is_pinned,
+      isUrgent: data.is_urgent
+    };
+  },
+
+  deleteAnnouncement: async (id: string): Promise<void> => {
+    const { error } = await supabase.from('announcements').delete().eq('id', id);
+    if (error) throw error;
   }
 };

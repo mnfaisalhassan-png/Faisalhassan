@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+
     "target": "ES2022",
     "experimentalDecorators": true,
     "useDefineForClassFields": false,
@@ -18,11 +19,7 @@
     "moduleDetection": "force",
     "allowJs": true,
     "jsx": "react-jsx",
-    "paths": {
-      "@/*": [
-        "./*"
-      ]
-    },
+
     "allowImportingTsExtensions": true,
     "noEmit": true
   }

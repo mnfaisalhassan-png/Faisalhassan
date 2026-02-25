@@ -3,9 +3,14 @@ import { GoogleGenAI, Modality } from "@google/genai";
 // Audio Context (Lazy init to comply with browser autoplay policies)
 let audioContext: AudioContext | null = null;
 
+// Extend the Window interface to include webkitAudioContext for Safari compatibility
+interface WindowWithAudioContext extends Window {
+  webkitAudioContext: typeof AudioContext;
+}
+
 function getAudioContext() {
   if (!audioContext) {
-    audioContext = new (window.AudioContext || (window as any).webkitAudioContext)({ sampleRate: 24000 });
+    audioContext = new (window.AudioContext || (window as WindowWithAudioContext).webkitAudioContext)({ sampleRate: 24000 });
   }
   return audioContext;
 }
@@ -50,12 +55,12 @@ function getAi() {
         let apiKey = '';
         
         // 1. Check window.ENV (Added in index.html for manual override)
-        if ((window as any).ENV && (window as any).ENV.API_KEY) {
-            apiKey = (window as any).ENV.API_KEY;
+        if ((window as { ENV?: { API_KEY?: string } }).ENV && (window as { ENV?: { API_KEY?: string } }).ENV.API_KEY) {
+            apiKey = (window as { ENV?: { API_KEY?: string } }).ENV.API_KEY;
         }
 
         // 2. Check Vite/Modern standard import.meta.env
-        const meta = (import.meta as any) || {};
+        const meta = (import.meta as { env?: Record<string, string> }) || {};
         if (!apiKey && meta.env) {
              if (meta.env.VITE_API_KEY) apiKey = meta.env.VITE_API_KEY;
              else if (meta.env.API_KEY) apiKey = meta.env.API_KEY;
@@ -68,8 +73,8 @@ function getAi() {
         }
 
         // 4. Last resort globals
-        if (!apiKey && (window as any).API_KEY) apiKey = (window as any).API_KEY;
-        if (!apiKey && (window as any).VITE_API_KEY) apiKey = (window as any).VITE_API_KEY;
+        if (!apiKey && (window as { API_KEY?: string }).API_KEY) apiKey = (window as { API_KEY?: string }).API_KEY;
+        if (!apiKey && (window as { VITE_API_KEY?: string }).VITE_API_KEY) apiKey = (window as { VITE_API_KEY?: string }).VITE_API_KEY;
 
         if (!apiKey) {
             console.warn("Gemini API Key is missing. Please set window.ENV.API_KEY in index.html or configure environment variables.");
@@ -127,7 +132,7 @@ export const aiService = {
       source.start();
       
       return true;
-    } catch (error: any) {
+    } catch (error) {
       console.error("TTS Error:", error);
       // Pass the error up to be handled by the UI
       throw error;
@@ -137,7 +142,7 @@ export const aiService = {
   /**
    * Generates a chat response using Gemini 3 Pro
    */
-  generateChatResponse: async (message: string, history: { role: string, parts: { text: string }[] }[] = []) => {
+  generateChatResponse: async (message: string, history: { role: "user" | "model"; parts: { text: string }[] }[] = []) => {
     const ai = getAi();
     const chat = ai.chats.create({
       model: "gemini-3-pro-preview",

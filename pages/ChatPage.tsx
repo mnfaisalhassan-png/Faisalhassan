@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { User, ChatMessage } from '../types';
 import { storageService } from '../services/storage';
 import { aiService } from '../services/ai';
 import { Button } from '../components/ui/Button';
-import { Send, MessageSquare, RefreshCw, AlertTriangle, Terminal, Database, Trash2, X, Bot, Sparkles } from 'lucide-react';
+import { Send, MessageSquare, RefreshCw, AlertTriangle, Terminal, Database, Trash2, Bot, Sparkles } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 
 interface ChatPageProps {
@@ -47,7 +47,7 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const checkForTableError = (error: any) => {
+  const checkForTableError = (error: { code?: string; message?: string }) => {
     // Check for Postgres undefined table (42P01) or PostgREST schema cache missing table (PGRST205)
     if (
         error.code === '42P01' || 
@@ -63,19 +63,19 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
     return false;
   };
 
-  const fetchMessages = async () => {
+  const fetchMessages = useCallback(async () => {
     if (mode !== 'community') return;
     try {
       const data = await storageService.getMessages(50);
       setMessages(data);
       setDbError(false);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to fetch messages", error);
-      checkForTableError(error);
+      checkForTableError(error as { code?: string; message?: string });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [mode]);
 
   // Poll for messages every 3 seconds, but only if no DB error and in community mode
   useEffect(() => {
@@ -86,16 +86,16 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
         }, 3000);
         return () => clearInterval(interval);
     }
-  }, [dbError, mode]);
+  }, [dbError, mode, fetchMessages]);
+
+  const scrollToBottom = useCallback(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, []);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
-  }, [messages, aiMessages, mode]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+  }, [messages, aiMessages, mode, scrollToBottom]);
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,9 +106,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
       await storageService.sendMessage(currentUser.id, currentUser.fullName, newMessage.trim());
       setNewMessage('');
       await fetchMessages(); // Immediate refresh
-    } catch (error: any) {
+    } catch (error) {
       console.error("Failed to send message", error);
-      checkForTableError(error);
+      checkForTableError(error as { code?: string; message?: string });
     } finally {
       setIsSending(false);
     }
@@ -177,17 +177,18 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
     try {
         await storageService.deleteMessage(msgId);
         // Success - no need to do anything, optimistic update holds
-    } catch (error: any) {
-        console.error("Failed to delete message", error);
+    } catch (error) {
+        const err = error as { code?: string; message?: string };
+        console.error("Failed to delete message", err);
         
         // Revert UI on failure
         setMessages(previousMessages);
         
         // Handle Permission Errors specifically
-        if (error.code === '42501' || error.message?.includes('violates row-level security policy')) {
+        if (err.code === '42501' || err.message?.includes('violates row-level security policy')) {
             setPermissionError(true);
         } else {
-            alert("Could not delete message. Server error: " + (error.message || "Unknown error"));
+            alert("Could not delete message. Server error: " + (err.message || "Unknown error"));
         }
     }
   };

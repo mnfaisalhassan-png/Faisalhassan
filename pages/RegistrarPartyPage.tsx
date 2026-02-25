@@ -66,7 +66,8 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
   const totalVoters = voters.length;
   const isStandardUser = currentUser.role === 'user';
 
-  // Stats Calculation
+  
+
   const partyStats = useMemo(() => {
       return voters.reduce<Record<string, PartyStat>>((acc, curr) => {
         const party = curr.registrarParty || 'Unknown';
@@ -405,8 +406,6 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
       const pathData = totalVoters > 0 && percent < 1
         ? `M 0 0 L ${startX} ${startY} A 100 100 0 ${isLarge ? 1 : 0} 1 ${endX} ${endY} Z`
         : percent === 1 ? `M 0 0 m -100, 0 a 100,100 0 1,0 200,0 a 100,100 0 1,0 -200,0` : ''; // Handle 100% case or segments
-
-      const theme = PARTY_THEMES[party] || DEFAULT_THEME;
       // Extract color from Tailwind class is hard in runtime JS without mapping, using generic fills based on index/theme
       // Simple Hack: Use a color map or hardcoded colors for SVG fills
       const fill = party === 'MDP' ? '#eab308' : party === 'PPM' ? '#db2777' : party === 'PNC' ? '#06b6d4' : party === 'Independent' ? '#9ca3af' : '#6366f1'; 
@@ -463,7 +462,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
                 {/* Custom SVG Pie Chart */}
                 <div className="relative w-64 h-64">
                     <svg viewBox="-100 -100 200 200" className="transform -rotate-90 w-full h-full drop-shadow-xl">
-                        {pieSegments.map((seg, i) => (
+                        {pieSegments.map((seg) => (
                             <path 
                                 key={seg.party} 
                                 d={seg.pathData} 
@@ -484,7 +483,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
                 </div>
 
                 <div className="mt-8 w-full space-y-2">
-                    {sortedParties.slice(0, 5).map(([party], i) => {
+                    {sortedParties.slice(0, 5).map(([party]) => {
                          const color = party === 'MDP' ? 'bg-yellow-500' : party === 'PPM' ? 'bg-pink-600' : party === 'PNC' ? 'bg-cyan-500' : party === 'Independent' ? 'bg-gray-400' : 'bg-indigo-500'; 
                          return (
                              <div key={party} className="flex items-center text-sm">

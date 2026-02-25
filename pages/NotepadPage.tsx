@@ -8,9 +8,9 @@ import { Input } from '../components/ui/Input';
 import { TextArea } from '../components/ui/TextArea';
 import { Modal } from '../components/ui/Modal';
 import { 
-  StickyNote, Plus, Trash2, Edit2, Calendar, 
-  Database, Terminal, Search, X, Lock, User as UserIcon, AlertTriangle,
-  Mic, MicOff, Sparkles, Volume2, StopCircle, Loader2
+  StickyNote, Plus, Trash2, Calendar, 
+  Database, Terminal, Search, Lock, User as UserIcon,
+  Mic, Volume2, StopCircle, Loader2
 } from 'lucide-react';
 
 interface NotepadPageProps {
@@ -60,7 +60,7 @@ export const NotepadPage: React.FC<NotepadPageProps> = ({ currentUser }) => {
       const data = await storageService.getAppNotes();
       setNotes(data);
       setDbError(false);
-    } catch (e: any) {
+    } catch (e) {
       console.error("Fetch Notes Error:", e);
       if (
         e.code === '42P01' || 
@@ -516,7 +516,7 @@ create policy "Public Access Notes" on app_notes for all using (true) with check
                             <button
                                 key={c}
                                 type="button"
-                                onClick={() => !isReadOnly && setColor(c as any)}
+                                onClick={() => !isReadOnly && setColor(c as AppNote['color'])}
                                 disabled={isReadOnly}
                                 className={`
                                     w-8 h-8 rounded-full border-2 transition-transform focus:outline-none

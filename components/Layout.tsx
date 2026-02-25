@@ -1,22 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { 
-  Users, 
-  LogOut, 
-  Menu, 
-  ShieldCheck, 
-  FileText,
-  User as UserIcon,
-  BarChart3,
-  MessageSquare,
-  ClipboardList,
-  Flag,
-  StickyNote,
-  LucideIcon,
-  KeyRound
+    Users, LogOut, Menu, ShieldCheck, FileText, User as UserIcon, BarChart3, MessageSquare, 
+    StickyNote, KeyRound, ChevronLeft, PieChart, Target, 
+    FilePlus, FileUp, Search, UserX, Users2, Vote, BarChart, FileDown, History, Annoyed, 
+    Settings, Bell
 } from 'lucide-react';
-import { User, PageView } from '../types';
+import { User, PageView, Permission } from '../types';
 
+// --- PROPS --- 
 interface LayoutProps {
   user: User;
   activePage: PageView;
@@ -25,198 +17,213 @@ interface LayoutProps {
   children: React.ReactNode;
 }
 
-// Helper to check permissions
-// Falls back to role checks if permissions array is missing (backward compatibility)
-const hasPermission = (user: User, permission: Permission | 'profile') => {
-    // Super Admin always has access
-    if (user.role === 'superadmin') return true;
-    if ((user.username || '').toLowerCase() === 'faisalhassan') return true;
+// --- NAVIGATION DATA --- 
+const navStructure = [
+    {
+        title: 'Main',
+        items: [
+            { page: 'election-overview', icon: BarChart3, label: 'Election Overview', permission: 'view_election_overview' },
+            { page: 'live-results', icon: Target, label: 'Live Results', permission: 'view_live_results' },
+            { page: 'turnout-analytics', icon: PieChart, label: 'Turnout Analytics', permission: 'view_turnout_analytics' },
+            { page: 'quick-summary', icon: FileText, label: 'Quick Summary', permission: 'view_quick_summary' },
+        ]
+    },
+    {
+        title: 'Voter Management',
+        items: [
+            { page: 'voter-registry', icon: Users, label: 'Voter Registry', permission: 'view_voter_registry' },
+            { page: 'add-voter', icon: FilePlus, label: 'Add Voter', permission: 'view_add_voter' },
+            { page: 'import-export-voters', icon: FileUp, label: 'Import / Export', permission: 'view_import_export_voters' },
+            { page: 'search-filter-voters', icon: Search, label: 'Search & Filter', permission: 'view_search_filter_voters' },
+            { page: 'suspended-inactive-voters', icon: UserX, label: 'Suspended Voters', permission: 'view_suspended_inactive_voters' },
+        ]
+    },
+    {
+        title: 'Candidates & Parties',
+        items: [
+            { page: 'candidates', icon: Users2, label: 'Candidates', permission: 'view_candidates' },
+            { page: 'party-distribution', icon: Vote, label: 'Party Distribution', permission: 'view_party_distribution' },
+            { page: 'candidate-performance', icon: BarChart, label: 'Performance', permission: 'view_candidate_performance' },
+        ]
+    },
+    {
+        title: 'Results & Reports',
+        items: [
+            { page: 'real-time-results', icon: Target, label: 'Real-Time Results', permission: 'view_real_time_results' },
+            { page: 'detailed-reports', icon: FileText, label: 'Detailed Reports', permission: 'view_detailed_reports' },
+            { page: 'export-results', icon: FileDown, label: 'Export Results', permission: 'view_export_results' },
+            { page: 'historical-data', icon: History, label: 'Historical Data', permission: 'view_historical_data' },
+        ]
+    },
+    {
+        title: 'Communication',
+        items: [
+            { page: 'community-chat', icon: MessageSquare, label: 'Community Chat', permission: 'view_chat' },
+            { page: 'announcements', icon: Annoyed, label: 'Announcements', permission: 'view_announcements' },
+            { page: 'campaign-notes', icon: StickyNote, label: 'Campaign Notes', permission: 'view_notepad' },
+        ]
+    },
+    {
+        title: 'System & Settings',
+        items: [
+            { page: 'profile', icon: UserIcon, label: 'My Profile', permission: 'profile' },
+            { page: 'change-password', icon: KeyRound, label: 'Change Password', permission: 'view_change_password' },
+            { page: 'user-roles-permissions', icon: ShieldCheck, label: 'Roles & Permissions', permission: 'view_admin_panel' },
+            { page: 'security-settings', icon: Settings, label: 'Security Settings', permission: 'view_security_settings' },
+            { page: 'audit-logs', icon: History, label: 'Audit Logs', permission: 'view_audit_logs' },
+        ]
+    }
+];
 
-    // If permissions array exists, strictly use it
+// --- PERMISSION HELPER --- 
+const hasPermission = (user: User, permission: Permission | 'profile' | string) => {
+    if (user.role === 'superadmin' || (user.username || '').toLowerCase() === 'faisalhassan') return true;
+    if (permission === 'profile') return true;
+    
+    // Check menuAccess for page visibility
+    if (user.menuAccess && user.menuAccess.length > 0) {
+        if (user.menuAccess.includes(permission)) return true;
+    }
+
+    // Check permissions for actions
     if (user.permissions && user.permissions.length > 0) {
         return user.permissions.includes(permission);
     }
-
-    // Legacy/Fallback Logic based on Role
-    switch(permission) {
-        case 'view_election_overview': return true;
-        case 'view_voter_registry': return true; // Everyone sees registry (maybe readonly)
-        case 'view_party_distribution': return true;
-        case 'view_chat': return user.role !== 'user';
-        case 'view_tasks': return user.role !== 'user';
-        case 'view_notepad': return user.role !== 'user';
-        case 'view_admin_panel': return user.role === 'admin';
-        default: return false;
-    }
+    
+    return false; // Default to secure
 };
 
-const NavItem = ({ 
-  page, 
-  icon: Icon, 
-  label, 
-  permission, 
-  user, 
-  activePage, 
-  onNavigate, 
-  setIsMobileMenuOpen 
-}: { 
-  page: PageView; 
-  icon: LucideIcon; 
-  label: string; 
-  permission: Permission | 'profile';
-  user: User;
-  activePage: PageView;
-  onNavigate: (page: PageView) => void;
-  setIsMobileMenuOpen: (open: boolean) => void;
-}) => {
-  // Only render if user has permission
-  if (!hasPermission(user, permission) && page !== 'profile') return null;
-
-  const isActive = activePage === page;
+// --- NAV ITEM COMPONENT --- 
+interface NavItemProps {
+    item: { page: PageView; icon: React.ElementType; label: string; permission: string; };
+    user: User;
+    activePage: PageView;
+    onNavigate: (page: PageView) => void;
+    isCollapsed: boolean;
+}
+const NavItem: React.FC<NavItemProps> = ({ item, user, activePage, onNavigate, isCollapsed }) => {
+  if (!hasPermission(user, item.permission)) return null;
+  const isActive = activePage === item.page;
   return (
     <button
-      onClick={() => {
-          onNavigate(page);
-          setIsMobileMenuOpen(false);
-      }}
-      className={`w-full flex items-center px-3 py-2 text-xs font-medium transition-all duration-200 rounded-lg mb-1 group relative overflow-hidden
+      onClick={() => onNavigate(item.page)}
+      title={isCollapsed ? item.label : ''}
+      className={`w-full flex items-center h-10 px-3 text-sm font-medium transition-all duration-200 rounded-lg group relative
         ${isActive 
-          ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20' 
-          : 'text-gray-600 hover:bg-white hover:text-primary-700 hover:shadow-sm'
+          ? 'bg-gray-200 text-black shadow-sm'
+          : 'text-gray-800 hover:bg-gray-100 hover:text-black'
         }`}
     >
-      <Icon className={`mr-2 h-4 w-4 transition-transform group-hover:scale-110 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-primary-600'}`} />
-      <span className="relative z-10">{label}</span>
+        <div className={`absolute left-0 top-0 h-full w-1 bg-black rounded-r-full transition-transform duration-300 ${isActive ? 'scale-y-100' : 'scale-y-0'}`}></div>
+        <item.icon className={`h-5 w-5 transition-all ${isCollapsed ? 'mx-auto' : 'mr-3'}`} />
+        <span className={`transition-opacity duration-200 ${isCollapsed ? 'opacity-0' : 'opacity-100'}`}>{item.label}</span>
     </button>
   );
 };
 
-export const Layout: React.FC<LayoutProps> = ({ 
-  user, 
-  activePage, 
-  onNavigate, 
-  onLogout, 
-  children 
-}) => {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+// --- SIDEBAR CONTENT COMPONENT --- 
+interface SidebarContentProps {
+    isSidebarCollapsed: boolean;
+    setIsSidebarCollapsed: React.Dispatch<React.SetStateAction<boolean>>;
+    user: User;
+    activePage: PageView;
+    onNavigate: (page: PageView) => void;
+    onLogout: () => void;
+}
+const SidebarContent: React.FC<SidebarContentProps> = ({ isSidebarCollapsed, setIsSidebarCollapsed, user, activePage, onNavigate, onLogout }) => {
+    if (!user) return null;
+    return (
+    <div className="flex flex-col h-full">
+        {/* Header */}
+        <div className={`flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-200 ${isSidebarCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <div className={`flex items-center gap-2 overflow-hidden transition-opacity duration-300 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center">
+                    <Vote className="h-5 w-5 text-white" />
+                </div>
+                <span className="font-bold text-black">Election System</span>
+            </div>
+            <button onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)} className="hidden md:block p-2 rounded-full hover:bg-black/5 text-gray-600">
+                <ChevronLeft className={`h-5 w-5 transition-transform duration-300 ${isSidebarCollapsed ? 'rotate-180' : 'rotate-0'}`} />
+            </button>
+        </div>
+
+        {/* Navigation */}
+        <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-4 custom-scrollbar">
+            {navStructure.map(section => (
+                <div key={section.title}>
+                    <h3 className={`px-3 text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 transition-opacity duration-200 ${isSidebarCollapsed ? 'opacity-0' : 'opacity-100'}`}>
+                        {section.title}
+                    </h3>
+                    <div className="space-y-1">
+                        {section.items.map(item => <NavItem key={item.page} {...{ item, user, activePage, onNavigate, isCollapsed: isSidebarCollapsed }} />)}
+                    </div>
+                </div>
+            ))}
+        </nav>
+
+        {/* User Panel */}
+        <div className="border-t border-gray-200 p-3">
+            <div className={`flex items-center w-full ${isSidebarCollapsed ? 'justify-center' : ''}`}>
+                <img 
+                    className="h-10 w-10 rounded-full object-cover"
+                    src={user.profilePictureUrl || `https://ui-avatars.com/api/?name=${user.fullName.replace(' ', '+')}&background=0F172A&color=fff`}
+                    alt="User avatar"
+                />
+                <div className={`ml-3 min-w-0 flex-1 transition-all duration-200 ${isSidebarCollapsed ? 'opacity-0 w-0' : 'opacity-100 w-auto'}`}>
+                    <p className="text-sm font-semibold text-black truncate">{user.fullName}</p>
+                    <p className="text-xs text-gray-600 truncate capitalize">{user.role}</p>
+                </div>
+                <button onClick={onLogout} title="Logout" className={`p-2 rounded-full text-gray-600 hover:bg-black/5 hover:text-black transition-all duration-200 ${isSidebarCollapsed ? '' : 'ml-2'}`}>
+                    <LogOut className="h-5 w-5" />
+                </button>
+            </div>
+        </div>
+    </div>
+    );
+};
+
+// --- MAIN LAYOUT COMPONENT --- 
+export const Layout: React.FC<LayoutProps> = ({ user, activePage, onNavigate, onLogout, children }) => {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex overflow-hidden">
+    <div className="min-h-screen bg-gray-100 flex overflow-hidden">
       {/* Sidebar for Desktop */}
-      <div className="hidden md:flex md:w-64 md:flex-col md:fixed md:inset-y-0 z-50">
-        <div className="flex-1 flex flex-col min-h-0 bg-white/60 backdrop-blur-xl border-r border-gray-200/50">
-          <div className="flex items-center h-16 flex-shrink-0 px-4 border-b border-gray-100">
-             <div className="flex items-center gap-2">
-                <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg flex items-center justify-center shadow-lg shadow-primary-500/30">
-                    <FileText className="h-5 w-5 text-white" />
-                </div>
-             </div>
-          </div>
-          
-          <div className="flex-1 flex flex-col overflow-y-auto px-3 py-4 space-y-0.5">
-            <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1 px-3">Main Menu</div>
-            <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <NavItem page="dashboard" icon={Users} label="Voter Registry" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            
-            {(hasPermission(user, 'view_chat') || hasPermission(user, 'view_tasks') || hasPermission(user, 'view_notepad')) && (
-                <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-4 mb-1 px-3">Collaboration</div>
-            )}
-            <NavItem page="chat" icon={MessageSquare} label="Community Chat" permission="view_chat" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <NavItem page="tasks" icon={ClipboardList} label="Task Management" permission="view_tasks" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <NavItem page="notepad" icon={StickyNote} label="Campaign Notes" permission="view_notepad" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            
-            <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mt-4 mb-1 px-3">System</div>
-            <NavItem page="profile" icon={UserIcon} label="My Profile" permission="profile" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} /> {/* Everyone has profile */}
-            <NavItem page="admin-panel" icon={ShieldCheck} label="Admin Panel" permission="view_admin_panel" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-            <NavItem page="change-password" icon={KeyRound} label="Change Password" permission="view_change_password" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-          </div>
-          
-          <div className="flex-shrink-0 border-t border-gray-100 p-3 m-2 rounded-xl bg-white/50">
-            <div className="flex items-center w-full">
-              <div className="flex-shrink-0">
-                 <img 
-                   className="h-8 w-8 rounded-full object-cover"
-                   src={user.profilePictureUrl || `https://ui-avatars.com/api/?name=${user.fullName.replace(' ', '+')}&background=random`}
-                   alt="User avatar"
-                 />
-              </div>
-              <div className="ml-2 w-full min-w-0">
-                <p className="text-xs font-semibold text-gray-900 truncate">
-                  {user.fullName}
-                </p>
-                <div className="flex items-center justify-between">
-                    <p className="text-[10px] text-gray-500 truncate capitalize">{user.role}</p>
-                    <button 
-                        onClick={onLogout}
-                        className="text-[10px] font-medium text-red-500 hover:text-red-700 flex items-center transition-colors"
-                        title="Logout"
-                    >
-                        <LogOut className="h-4 w-4" />
-                    </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className={`hidden md:flex flex-col fixed inset-y-0 z-50 bg-white transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-64'}`}>
+        <SidebarContent {...{ isSidebarCollapsed, setIsSidebarCollapsed, user, activePage, onNavigate, onLogout }} />
       </div>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200 h-16 flex items-center justify-between px-4 shadow-sm">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b h-16 flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
-            <div className="h-8 w-8 bg-gradient-to-br from-primary-500 to-indigo-600 rounded-lg flex items-center justify-center">
-                <FileText className="h-5 w-5 text-white" />
-            </div>
+            <div className="h-8 w-8 bg-black rounded-lg flex items-center justify-center"><Vote className="h-5 w-5 text-white" /></div>
+            <span className="font-bold text-gray-800">Election System</span>
         </div>
-        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
-          <Menu className="h-6 w-6" />
-        </button>
+        <button onClick={() => setIsMobileMenuOpen(true)} className="p-2 text-gray-600"><Menu className="h-6 w-6" /></button>
       </div>
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-50 flex md:hidden animate-fade-in">
-          <div className="fixed inset-0 bg-gray-900/50 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}></div>
-          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white shadow-2xl animate-slide-right">
-            <div className="pt-5 pb-4 px-4 border-b border-gray-100">
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 bg-primary-600 rounded-xl flex items-center justify-center shadow-lg">
-                        <FileText className="h-6 w-6 text-white" />
-                    </div>
-                </div>
-            </div>
-            <nav className="flex-1 px-4 py-4 space-y-1 overflow-y-auto">
-                <NavItem page="election-overview" icon={BarChart3} label="Election Overview" permission="view_election_overview" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="dashboard" icon={Users} label="Registration" permission="view_voter_registry" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="registrar-party" icon={Flag} label="Party Distribution" permission="view_party_distribution" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                
-                <div className="h-px bg-gray-100 my-2"></div>
-                <NavItem page="chat" icon={MessageSquare} label="Community Chat" permission="view_chat" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="tasks" icon={ClipboardList} label="Task Management" permission="view_tasks" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="notepad" icon={StickyNote} label="Campaign Notes" permission="view_notepad" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-
-                <div className="h-px bg-gray-100 my-2"></div>
-                <NavItem page="profile" icon={UserIcon} label="My Profile" permission="profile" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="admin-panel" icon={ShieldCheck} label="Admin Panel" permission="view_admin_panel" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                <NavItem page="change-password" icon={KeyRound} label="Change Password" permission="view_change_password" user={user} activePage={activePage} onNavigate={onNavigate} setIsMobileMenuOpen={setIsMobileMenuOpen} />
-                
-                <button
-                    onClick={onLogout}
-                    className="w-full flex items-center px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl mt-4 border border-red-100"
-                >
-                    <LogOut className="mr-3 h-5 w-5" />
-                    Sign out
-                </button>
-            </nav>
-          </div>
+        <div className="fixed inset-0 z-50 flex md:hidden">
+          <div className="fixed inset-0 bg-black/50" onClick={() => setIsMobileMenuOpen(false)}></div>
+          <div className="relative flex-1 flex flex-col max-w-xs w-full bg-white">{user && <SidebarContent {...{ isSidebarCollapsed, setIsSidebarCollapsed, user, activePage, onNavigate, onLogout }} />}</div>
         </div>
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col md:pl-64 w-full h-screen overflow-hidden">
-         <div className="md:hidden h-16 w-full flex-shrink-0"></div> {/* Spacer for mobile header */}
-         <main className="flex-1 overflow-y-auto bg-gray-50/50 p-4 sm:p-6 scroll-smooth">
-            <div className="max-w-7xl mx-auto animate-fade-in">
+      <div className={`flex-1 flex flex-col w-full h-screen overflow-hidden transition-all duration-300 ${isSidebarCollapsed ? 'md:pl-20' : 'md:pl-64'}`}>
+         <div className="md:hidden h-16 w-full flex-shrink-0"></div>
+         <header className="hidden md:flex items-center justify-end h-16 px-6 border-b bg-white">
+            <div className="flex items-center gap-4">
+                <button className="relative p-2 text-gray-500 hover:text-gray-800">
+                    <Bell className="h-5 w-5" />
+                    <div className="absolute top-1.5 right-1.5 h-2 w-2 bg-red-500 rounded-full"></div>
+                </button>
+            </div>
+         </header>
+         <main className="flex-1 overflow-y-auto bg-gray-50 p-6">
+            <div className="max-w-7xl mx-auto">
                 {children}
             </div>
          </main>

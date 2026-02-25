@@ -5,9 +5,9 @@ import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { 
-    Trash2, UserPlus, Shield, User as UserIcon, AlertTriangle, 
-    Lock, Activity, Monitor, Clock, Zap, Users, Unlock, Ban, Eye, CheckCircle, Save, Terminal,
-    CheckSquare, Square, BarChart3
+    UserPlus, Shield, User as UserIcon, AlertTriangle, 
+    Lock, Activity, Monitor, Clock, Zap, Users, Unlock, Ban, Eye, Save, Terminal,
+    CheckSquare, Square
 } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
 
@@ -17,6 +17,26 @@ interface AdminPanelProps {
 
 // Permission Constants
 const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
+    MENU_ACCESS: [
+        { id: 'view_live_results', label: 'Live Results' },
+        { id: 'view_turnout_analytics', label: 'Turnout Analytics' },
+        { id: 'view_quick_summary', label: 'Quick Summary' },
+        { id: 'view_add_voter', label: 'Add Voter' },
+        { id: 'view_import_export', label: 'Import / Export' },
+        { id: 'view_search_filter', label: 'Search & Filter' },
+        { id: 'view_suspended_voters', label: 'Suspended Voters' },
+        { id: 'view_candidates', label: 'Candidates' },
+        { id: 'view_performance', label: 'Performance' },
+        { id: 'view_real_time_results', label: 'Real-Time Results' },
+        { id: 'view_export_results', label: 'Export Results' },
+        { id: 'view_historical_data', label: 'Historical Data' },
+        { id: 'view_announcements', label: 'Announcements' },
+        { id: 'view_my_profile', label: 'My Profile' },
+        { id: 'view_change_password', label: 'Change Password' },
+        { id: 'view_roles_permissions', label: 'Roles & Permissions' },
+        { id: 'view_security_settings', label: 'Security Settings' },
+        { id: 'view_audit_logs', label: 'Audit Logs' },
+    ],
     MENU: [
         { id: 'view_election_overview', label: 'Election Overview' },
         { id: 'view_voter_registry', label: 'Voter Registry' },
@@ -41,7 +61,7 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'view_metric_candidate_sheema', label: 'Show Candidate Seema' },
         { id: 'view_metric_candidate_sadiq', label: 'Show Shadda elections' },
         { id: 'view_metric_total_male_voters', label: 'Show Male Voters for Seema' },
-        { id: 'view_metric_total_female_voters', label: 'Show Female Voters for Seema' },,
+        { id: 'view_metric_total_female_voters', label: 'Show Female Voters for Seema' },
         { id: 'view_metric_r_roshi', label: 'Show R-Roshi Status' },
         { id: 'view_metric_rf_seema', label: 'Show RF-Seema' },
         { id: 'view_metric_island_turnout', label: 'Show Voter Turnout by Island' }
@@ -220,6 +240,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
       // Automatically reset permissions to standard role defaults when role switches
       // This provides a good DX. Admin can then customize.
       setSelectedPermissions(ROLE_DEFAULTS[newRole]);
+      // Also set default menu access
+      const menuPermissions = PERMISSIONS.MENU_ACCESS.map(p => p.id);
+      const defaultMenuAccess = ROLE_DEFAULTS[newRole].filter(p => menuPermissions.includes(p));
+      // This is a bit of a hack, we should store menuAccess separately
+      // For now, we'll just add it to the selectedPermissions
+      setSelectedPermissions(prev => [...new Set([...prev, ...defaultMenuAccess])]);
   };
 
   const togglePermission = (permId: string) => {
@@ -238,8 +264,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
         await storageService.deleteUser(userId);
         await storageService.createAuditLog('delete_user', `Deleted user: ${userToDelete?.username || 'Unknown'}`, currentUser);
         await refreshData();
-    } catch (e: any) {
-        alert("Failed to delete: " + e.message);
+    } catch (e) {
+        alert("Failed to delete: " + (e as Error).message);
     }
   };
 
@@ -255,18 +281,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
           if (editingUser && editingUser.id === user.id) {
               setIsBlockedForm(false);
           }
-      } catch (e: any) {
-          console.error("Unblock Error:", e);
+      } catch (e) {
+          const error = e as { code?: string; message?: string };
+          console.error("Unblock Error:", error);
            if (
-              e.code === '23514' || 
-              e.code === '42703' || 
-              e.code === 'PGRST204' || 
-              e.message?.includes('is_blocked') ||
-              e.message?.includes('schema cache')
+              error.code === '23514' || 
+              error.code === '42703' || 
+              error.code === 'PGRST204' || 
+              error.message?.includes('is_blocked') ||
+              error.message?.includes('schema cache')
           ) {
               setShowSchemaError(true);
           } else {
-              alert("Failed to unblock: " + e.message);
+              alert("Failed to unblock: " + error.message);
           }
       } finally {
         setProcessingUserId(null);
@@ -285,18 +312,19 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
           if (editingUser && editingUser.id === user.id) {
               setIsBlockedForm(true);
           }
-      } catch (e: any) {
-          console.error("Block Error:", e);
+      } catch (e) {
+          const error = e as { code?: string; message?: string };
+          console.error("Block Error:", error);
            if (
-              e.code === '23514' || 
-              e.code === '42703' || 
-              e.code === 'PGRST204' || 
-              e.message?.includes('is_blocked') ||
-              e.message?.includes('schema cache')
+              error.code === '23514' || 
+              error.code === '42703' || 
+              error.code === 'PGRST204' || 
+              error.message?.includes('is_blocked') ||
+              error.message?.includes('schema cache')
           ) {
               setShowSchemaError(true);
           } else {
-              alert("Failed to block: " + e.message);
+              alert("Failed to block: " + error.message);
           }
       } finally {
         setProcessingUserId(null);
@@ -335,7 +363,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
             fullName: fullName.trim(),
             role: role,
             isBlocked: isBlockedForm,
-            permissions: selectedPermissions
+            permissions: selectedPermissions,
+            menuAccess: selectedPermissions.filter(p => PERMISSIONS.MENU_ACCESS.some(m => m.id === p))
         };
 
         if (editingUser) {
@@ -370,22 +399,23 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
         setIsModalOpen(false);
         setEditingUser(null);
         setPassword('');
-    } catch (e: any) {
-        console.error("Save Error:", e);
+    } catch (e) {
+        const error = e as { code?: string; message?: string };
+        console.error("Save Error:", error);
         
         // Comprehensive check for database schema errors
         if (
-            e.code === '23514' || // Check constraint violation
-            e.code === '42703' || // Undefined column
-            e.code === 'PGRST204' || // Column not found in schema cache
-            e.message?.includes('users_role_check') || 
-            e.message?.includes('is_blocked') ||
-            e.message?.includes('permissions') || 
-            e.message?.includes('schema cache')
+            error.code === '23514' || // Check constraint violation
+            error.code === '42703' || // Undefined column
+            error.code === 'PGRST204' || // Column not found in schema cache
+            error.message?.includes('users_role_check') || 
+            error.message?.includes('is_blocked') ||
+            error.message?.includes('permissions') || 
+            error.message?.includes('schema cache')
         ) {
             setShowSchemaError(true);
         } else {
-            alert("Error saving user: " + (e.message || "Unknown error"));
+            alert("Error saving user: " + (error.message || "Unknown error"));
         }
     } finally {
         setIsSaving(false);
@@ -428,7 +458,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
              {['overview', 'users', 'logs'].map((tab) => (
                  <button 
                     key={tab}
-                    onClick={() => setActiveTab(tab as any)}
+                    onClick={() => setActiveTab(tab as 'overview' | 'users' | 'logs')}
                     className={`px-4 py-2 text-sm font-medium rounded-lg transition-all capitalize ${
                         activeTab === tab 
                         ? 'bg-gray-900 text-white shadow-md' 
@@ -750,7 +780,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                         className={`flex items-center p-2 border rounded-lg transition-all ${isSuperAdmin && !isSaving ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-75'} ${role === r.id ? `${r.bg} border-current ring-1 ring-offset-1` : ''}`}
                         onClick={() => {
                             if (isSuperAdmin && !isSaving) {
-                                handleRoleChange(r.id as any);
+                                handleRoleChange(r.id as UserRole);
                             }
                         }}
                     >
@@ -779,6 +809,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
               <label className="block text-sm font-medium text-gray-700 mb-2">Granular Permissions</label>
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   
+                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase">
+                      Menu Visibility
+                  </div>
+                  <div className="p-3 grid grid-cols-2 gap-2">
+                      {PERMISSIONS.MENU_ACCESS.map(perm => (
+                          <div 
+                              key={perm.id}
+                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
+                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
+                          >
+                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
+                              <span className="text-xs font-medium">{perm.label}</span>
+                          </div>
+                      ))}
+                  </div>
+
                   {/* Menu Section */}
                   <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase">
                       Menu Access

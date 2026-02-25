@@ -1,7 +1,46 @@
 
 export type UserRole = 'superadmin' | 'admin' | 'candidate' | 'mamdhoob' | 'user';
 
-export type PageView = 'login' | 'dashboard' | 'election-overview' | 'registrar-party' | 'chat' | 'tasks' | 'notepad' | 'admin-panel' | 'profile' | 'change-password' | 'kudafari-election';
+export type PageView =
+  // Dashboard
+  | 'election-overview'
+  | 'live-results'
+  | 'turnout-analytics'
+  | 'quick-summary'
+  // Voter Management
+  | 'voter-registry'
+  | 'add-voter'
+  | 'import-export-voters'
+  | 'search-filter-voters'
+  | 'suspended-inactive-voters'
+  // Candidates & Parties
+  | 'candidates'
+  | 'party-distribution'
+  | 'candidate-performance'
+  // Results & Reports
+  | 'real-time-results'
+  | 'detailed-reports'
+  | 'export-results'
+  | 'historical-data'
+  // Communication
+  | 'community-chat'
+  | 'announcements'
+  | 'campaign-notes'
+  // System & Settings
+  | 'profile'
+  | 'change-password'
+  | 'user-roles-permissions'
+  | 'security-settings'
+  | 'audit-logs'
+  // Legacy
+  | 'login'
+  | 'dashboard' // This is now voter-registry
+  | 'registrar-party' // This is now party-distribution
+  | 'chat' // This is now community-chat
+  | 'tasks' // This will be removed
+  | 'notepad' // This is now campaign-notes
+  | 'admin-panel' // This is now user-roles-permissions
+  | 'kudafari-election';
 
 export interface User {
   id: string;
@@ -12,8 +51,19 @@ export interface User {
   email?: string;
   isBlocked?: boolean; // New field for security lockout
   permissions?: string[]; // Granular access control
+  menuAccess?: string[]; // Menu visibility control
   profilePictureUrl?: string; // URL for the user's profile picture
 }
+
+export type Voter = {
+    id: string;
+    id_card_number: string;
+    full_name: string;
+    address: string;
+    contact_number?: string;
+    voting_status: 'Voted' | 'Not Voted';
+    notepad?: string;
+};
 
 export interface VoterRecord {
   id: string;
@@ -77,14 +127,61 @@ export interface AuditLog {
 }
 
 export const ALL_PERMISSIONS = [
+  // Dashboard
   'view_election_overview',
+  'view_live_results',
+  'view_turnout_analytics',
+  'view_quick_summary',
+  // Voter Management
   'view_voter_registry',
+  'view_add_voter',
+  'view_import_export_voters',
+  'view_search_filter_voters',
+  'view_suspended_inactive_voters',
+  // Candidates & Parties
+  'view_candidates',
   'view_party_distribution',
+  'view_candidate_performance',
+  // Results & Reports
+  'view_real_time_results',
+  'view_detailed_reports',
+  'view_export_results',
+  'view_historical_data',
+  // Communication
   'view_chat',
-  'view_tasks',
+  'view_announcements',
   'view_notepad',
+  // System & Settings
+  'view_change_password',
   'view_admin_panel',
-  'view_change_password'
+  'view_security_settings',
+  'view_audit_logs'
 ] as const;
 
 export type Permission = typeof ALL_PERMISSIONS[number];
+
+export interface Announcement {
+  id: string;
+  title: string;
+  content: string;
+  category: 'General' | 'Urgent' | 'Election Day' | 'System Update';
+  author: string;
+  date: string;
+  isPinned: boolean;
+  isUrgent: boolean;
+}
+
+export interface Candidate {
+  id: string;
+  candidateId: string;
+  profilePhotoUrl: string;
+  fullName: string;
+  address: string;
+  idCardNumber: string;
+  gender: 'Male' | 'Female' | 'Other';
+  partyName: string;
+  position: string;
+  contactNumber?: string;
+  status: 'Active' | 'Withdrawn' | 'Disqualified';
+  totalVotes: number;
+}
