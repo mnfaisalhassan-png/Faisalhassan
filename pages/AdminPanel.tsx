@@ -143,6 +143,8 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
   const [role, setRole] = useState<UserRole>('user');
   const [isBlockedForm, setIsBlockedForm] = useState(false);
   const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
+  const [permissionSearch, setPermissionSearch] = useState('');
+  const [userSearch, setUserSearch] = useState('');
 
   // Loading States
   const [isSaving, setIsSaving] = useState(false);
@@ -609,7 +611,12 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
       {activeTab === 'users' && (
           <div className="space-y-4">
               <div className="flex justify-between items-center">
-                  <h2 className="text-xl font-bold text-gray-800">User Management</h2>
+                  <Input 
+                      placeholder="Search users..."
+                      value={userSearch}
+                      onChange={e => setUserSearch(e.target.value)}
+                      className="h-8 text-xs w-48"
+                  />
                   {isSuperAdmin && (
                       <Button onClick={handleOpenCreate} className="shadow-lg shadow-green-500/20 bg-green-600 hover:bg-green-700 text-white border-transparent">
                         <UserPlus className="h-4 w-4 mr-2" /> New User
@@ -628,7 +635,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {users.map(user => {
+                    {users.filter(u => u.fullName.toLowerCase().includes(userSearch.toLowerCase()) || u.username.toLowerCase().includes(userSearch.toLowerCase())).map(user => {
                         const status = getUserStatus(user.id);
                         return (
                           <tr key={user.id} className={`hover:bg-gray-50 transition-colors ${user.isBlocked ? 'bg-red-50 hover:bg-red-100' : ''}`}>
@@ -819,14 +826,22 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
 
           {/* Granular Permissions */}
           <div className="border-t border-gray-200 pt-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Granular Permissions</label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-sm font-medium text-gray-700">Granular Permissions</label>
+                <Input 
+                    placeholder="Search..."
+                    value={permissionSearch}
+                    onChange={e => setPermissionSearch(e.target.value)}
+                    className="h-8 text-xs w-48"
+                />
+              </div>
               <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
                   
                   <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase">
                       Menu Visibility
                   </div>
                   <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.MENU_ACCESS.map(perm => (
+                      {PERMISSIONS.MENU_ACCESS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
                           <div 
                               key={perm.id}
                               onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
@@ -843,7 +858,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                       Menu Access
                   </div>
                   <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.MENU.map(perm => (
+                      {PERMISSIONS.MENU.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
                           <div 
                               key={perm.id}
                               onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
@@ -860,7 +875,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                       Global Actions & Visibility
                   </div>
                   <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.ACTIONS.map(perm => (
+                      {PERMISSIONS.ACTIONS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
                           <div 
                               key={perm.id}
                               onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
@@ -877,7 +892,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                       Election Overview Metrics
                   </div>
                   <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.METRICS.map(perm => (
+                      {PERMISSIONS.METRICS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
                           <div 
                               key={perm.id}
                               onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
@@ -894,7 +909,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                       Voter Form Edit Access
                   </div>
                   <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.FORM_ACCESS.map(perm => (
+                      {PERMISSIONS.FORM_ACCESS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
                           <div 
                               key={perm.id}
                               onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
