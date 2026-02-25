@@ -56,10 +56,14 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate }) => {
                         />
                     </div>
                     
-                    <input id="profile-pic-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
-                    <label htmlFor="profile-pic-upload" className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm">
-                        Upload / Change Photo
-                    </label>
+                    {user.permissions?.includes('action_update_profile_picture') && (
+                        <>
+                            <input id="profile-pic-upload" type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                            <label htmlFor="profile-pic-upload" className="cursor-pointer bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-lg text-sm">
+                                Upload / Change Photo
+                            </label>
+                        </>
+                    )}
                 </div>
 
                 <div className="mt-8 space-y-4">
@@ -84,7 +88,9 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ user, onUpdate }) => {
                 )}
 
                 <div className="mt-8 border-t pt-6 flex justify-end">
-                    <Button onClick={handleSubmit} isLoading={isUpdating}>Update Picture</Button>
+                    {user.permissions?.includes('action_update_profile_picture') && (
+                        <Button onClick={handleSubmit} isLoading={isUpdating}>Update Picture</Button>
+                    )}
                 </div>
             </div>
         </div>

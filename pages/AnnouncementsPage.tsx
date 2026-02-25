@@ -137,7 +137,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
             </h1>
             <p className="text-gray-500 mt-1">Official election updates and notices.</p>
           </div>
-          {isAdmin && (
+          {currentUser.permissions?.includes('action_create_announcement') && (
             <Button onClick={openCreateModal}>
               <Plus className="h-4 w-4 mr-2" />
               Create Announcement
@@ -216,12 +216,14 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-2">
                     <Button variant="outline" size="sm">View More</Button>
-                    {isAdmin && (
-                      <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      {currentUser.permissions?.includes('action_edit_announcement') && (
                         <Button variant="ghost" size="sm" className="text-gray-500 hover:text-primary-600" onClick={() => openEditModal(item)}>Edit</Button>
+                      )}
+                      {currentUser.permissions?.includes('action_delete_announcement') && (
                         <Button variant="ghost" size="sm" className="text-gray-500 hover:text-red-600" onClick={() => openDeleteModal(item)}>Delete</Button>
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
                 </div>
               )

@@ -53,6 +53,10 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'view_voter_profile', label: 'Show Voter Profile (Read Only)' },
         { id: 'action_delete_voter', label: 'Delete Member' },
         { id: 'action_export_data', label: 'Export Data (CSV/PDF)' },
+        { id: 'action_update_profile_picture', label: 'Update Profile Picture' },
+        { id: 'action_create_announcement', label: 'Create Announcement' },
+        { id: 'action_edit_announcement', label: 'Edit Announcement' },
+        { id: 'action_delete_announcement', label: 'Delete Announcement' },
     ],
     METRICS: [
         { id: 'view_metric_total_registered', label: 'Show Total Registered' },
@@ -96,7 +100,10 @@ const ROLE_DEFAULTS: Record<UserRole, Permission[]> = {
         // Metrics
         'view_metric_total_registered', 'view_metric_votes_cast', 'view_metric_pending_votes',
         'view_metric_candidate_sheema', 'view_metric_candidate_shadda',
-        'view_metric_r_roshi', 'view_metric_rf_seema', 'view_metric_island_turnout'
+        'view_metric_r_roshi', 'view_metric_rf_seema', 'view_metric_island_turnout',
+        'action_update_profile_picture',
+        'action_create_announcement',
+        'action_edit_announcement'
     ],
     mamdhoob: [
         'view_election_overview', 'view_voter_registry', 'view_party_distribution', 'view_chat', 'view_notepad',
@@ -104,7 +111,9 @@ const ROLE_DEFAULTS: Record<UserRole, Permission[]> = {
         'edit_voter_status', 'edit_voter_notes',
         // Metrics
         'view_metric_total_registered', 'view_metric_votes_cast', 'view_metric_pending_votes',
-        'view_metric_candidate_sheema', 'view_metric_candidate_shadda'
+        'view_metric_candidate_sheema', 'view_metric_candidate_shadda',
+        'action_update_profile_picture',
+        'action_create_announcement'
     ],
     user: [
         'view_election_overview', 'view_voter_registry', 'view_party_distribution', 

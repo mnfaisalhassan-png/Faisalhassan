@@ -155,7 +155,11 @@ export const ALL_PERMISSIONS = [
   'view_change_password',
   'view_admin_panel',
   'view_security_settings',
-  'view_audit_logs'
+  'view_audit_logs',
+  'action_update_profile_picture',
+  'action_create_announcement',
+  'action_edit_announcement',
+  'action_delete_announcement'
 ] as const;
 
 export type Permission = typeof ALL_PERMISSIONS[number];
