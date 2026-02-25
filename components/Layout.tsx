@@ -61,6 +61,7 @@ const navStructure = [
             { page: 'community-chat', icon: MessageSquare, label: 'Community Chat', permission: 'view_chat' },
             { page: 'announcements', icon: Annoyed, label: 'Announcements', permission: 'view_announcements' },
             { page: 'campaign-notes', icon: StickyNote, label: 'Campaign Notes', permission: 'view_notepad' },
+            { page: 'tasks', icon: StickyNote, label: 'Task Management', permission: 'view_tasks' },
         ]
     },
     {

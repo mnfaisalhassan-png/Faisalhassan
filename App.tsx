@@ -19,6 +19,7 @@ import { SecuritySettingsPage } from './pages/SecuritySettingsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
+import { TasksPage } from './pages/TasksPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { Layout } from './components/Layout';
 
@@ -152,6 +153,7 @@ const App: React.FC = () => {
         return <ChatPage currentUser={user} />;
       case 'announcements': return <AnnouncementsPage currentUser={user!} />;
       case 'campaign-notes': return <NotepadPage currentUser={user!} />;
+      case 'tasks': return <TasksPage currentUser={user!} />;
 
       // System & Settings
       case 'profile': return <ProfilePage user={user!} onUpdate={handleUpdateProfile} />;
