@@ -20,6 +20,8 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [announcementToDelete, setAnnouncementToDelete] = useState<Announcement | null>(null);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
+  const [viewingAnnouncement, setViewingAnnouncement] = useState<Announcement | null>(null);
 
   const fetchAnnouncements = async () => {
     try {
@@ -92,6 +94,11 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
   };
 
   const isAdmin = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+
+  const openViewModal = (announcement: Announcement) => {
+    setViewingAnnouncement(announcement);
+    setIsViewModalOpen(true);
+  };
 
   const filteredAnnouncements = announcements.filter(item => {
     const lowercasedQuery = searchQuery.toLowerCase();
@@ -215,7 +222,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
                   <p className="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">{item.content}</p>
 
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100 mt-2">
-                    <Button variant="outline" size="sm">View More</Button>
+                    <Button variant="outline" size="sm" onClick={() => openViewModal(item)}>View More</Button>
                     <div className="flex gap-2">
                       {currentUser.permissions?.includes('action_edit_announcement') && (
                         <Button variant="ghost" size="sm" className="text-gray-500 hover:text-primary-600" onClick={() => openEditModal(item)}>Edit</Button>
@@ -247,6 +254,29 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
           }}
           onSave={handleSave}
         />
+      )}
+
+      {isViewModalOpen && viewingAnnouncement && (
+        <Modal
+          isOpen={isViewModalOpen}
+          onClose={() => setIsViewModalOpen(false)}
+          title={viewingAnnouncement.title}
+          footer={<Button variant="secondary" onClick={() => setIsViewModalOpen(false)}>Close</Button>}
+        >
+          <div className="space-y-4">
+            <div className="flex items-center text-xs text-gray-500 space-x-4">
+                <span className="flex items-center">
+                    <Calendar className="h-3.5 w-3.5 mr-1.5" />
+                    {new Date(viewingAnnouncement.date).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
+                </span>
+                <span className="flex items-center">
+                    <UserIcon className="h-3.5 w-3.5 mr-1.5" />
+                    Posted by {viewingAnnouncement.author}
+                </span>
+            </div>
+            <p className="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">{viewingAnnouncement.content}</p>
+          </div>
+        </Modal>
       )}
 
       {isDeleteModalOpen && (
