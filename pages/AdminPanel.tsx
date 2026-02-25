@@ -57,6 +57,7 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'action_create_announcement', label: 'Create Announcement' },
         { id: 'action_edit_announcement', label: 'Edit Announcement' },
         { id: 'action_delete_announcement', label: 'Delete Announcement' },
+        { id: 'action_export_list', label: 'Export list' },
     ],
     METRICS: [
         { id: 'view_metric_total_registered', label: 'Show Total Registered' },
