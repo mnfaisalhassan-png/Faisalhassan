@@ -288,9 +288,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     const filtered = voters.filter(v => {
       const query = searchQuery.toLowerCase();
       const matchesSearch = 
-        v.fullName.toLowerCase().includes(query) || 
-        v.idCardNumber.toLowerCase().includes(query) ||
-        v.island.toLowerCase().includes(query) ||
+        (v.fullName && v.fullName.toLowerCase().includes(query)) || 
+        (v.idCardNumber && v.idCardNumber.toLowerCase().includes(query)) ||
+        (v.island && v.island.name && v.island.name.toLowerCase().includes(query)) ||
         (v.address && v.address.toLowerCase().includes(query));
       
       const matchesFilter = 
@@ -336,7 +336,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             `"${v.fullName}"`,
             `"${v.gender || ''}"`,
             `"${v.address}"`,
-            `"${v.island}"`,
+            `"${v.island.name}"`,
             `"${v.phoneNumber || ''}"`,
             `"${v.registrarParty || ''}"`,
             `"${v.hasVoted ? 'Voted' : 'Eligible'}"`,
@@ -374,7 +374,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             <td style="padding: 8px;">${v.idCardNumber}</td>
             <td style="padding: 8px;">${v.fullName}</td>
             <td style="padding: 8px;">${v.gender || '-'}</td>
-            <td style="padding: 8px;">${v.island}</td>
+            <td style="padding: 8px;">${v.island.name}</td>
             <td style="padding: 8px;">${v.address}</td>
             <td style="padding: 8px;">${v.phoneNumber || '-'}</td>
             <td style="padding: 8px;">${v.registrarParty || '-'}</td>
@@ -449,11 +449,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setFullName('');
     setGender('');
     setAddress('');
-    setIsland(islands[0] || '');
+    setIsland(islands[0]?.name || '');
     setPhoneNumber('');
     setHasVoted(false);
     setVotingBoxNumber('');
-    setRegistrarParty(parties[0] || '');
+    setRegistrarParty(parties[0]?.name || '');
     setSheema(false);
     setSadiq(false);
     setRRoshi(false);
@@ -479,11 +479,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setFullName(voter.fullName);
     setGender(voter.gender || '');
     setAddress(voter.address);
-    setIsland(voter.island);
+    setIsland(voter.island.name);
     setPhoneNumber(voter.phoneNumber || '');
     setHasVoted(voter.hasVoted);
     setVotingBoxNumber(voter.votingBoxNumber || '');
-    setRegistrarParty(voter.registrarParty || parties[0] || '');
+    setRegistrarParty(voter.registrarParty || parties[0]?.name || '');
     setSheema(voter.sheema || false);
     setSadiq(voter.sadiq || false);
     setRRoshi(voter.rRoshi || false);
@@ -561,7 +561,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             fullName,
             gender: (gender as 'Male' | 'Female') || undefined,
             address,
-            island,
+            island: typeof island === 'object' && island !== null ? (island as { name: string }).name : island,
             phoneNumber,
             hasVoted,
             votingBoxNumber,

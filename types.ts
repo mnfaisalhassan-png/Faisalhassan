@@ -71,7 +71,7 @@ export interface VoterRecord {
   fullName: string;
   gender?: 'Male' | 'Female';
   address: string;
-  island: string;
+  island: { id: string; name: string };
   phoneNumber?: string;
   hasVoted: boolean;
   votingBoxNumber?: string;

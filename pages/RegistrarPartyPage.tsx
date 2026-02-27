@@ -108,9 +108,9 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
         if (searchQuery) {
             const q = searchQuery.toLowerCase();
             return (
-                v.fullName.toLowerCase().includes(q) ||
-                v.idCardNumber.toLowerCase().includes(q) ||
-                v.island.toLowerCase().includes(q) ||
+                (v.fullName && v.fullName.toLowerCase().includes(q)) ||
+                (v.idCardNumber && v.idCardNumber.toLowerCase().includes(q)) ||
+                (v.island && v.island.name && v.island.name.toLowerCase().includes(q)) ||
                 (v.address && v.address.toLowerCase().includes(q))
             );
         }
@@ -124,7 +124,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
       const islands: Record<string, number> = {};
       voters.forEach(v => {
           if ((v.registrarParty || 'Unknown') === selectedParty) {
-              const island = v.island || 'Unknown';
+              const island = v.island.name || 'Unknown';
               islands[island] = (islands[island] || 0) + 1;
           }
       });
@@ -140,7 +140,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
         ...filteredList.map(v => [
             `"${v.idCardNumber}"`,
             `"${v.fullName}"`,
-            `"${v.island}"`,
+            `"${v.island.name}"`,
             `"${v.address}"`,
             `"${v.phoneNumber || ''}"`,
             `"${v.hasVoted ? 'Voted' : 'Eligible'}"`
@@ -165,7 +165,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
         <tr style="border-bottom: 1px solid #eee;">
             <td style="padding: 8px;">${v.idCardNumber}</td>
             <td style="padding: 8px;">${v.fullName}</td>
-            <td style="padding: 8px;">${v.island}</td>
+            <td style="padding: 8px;">${v.island.name}</td>
             <td style="padding: 8px;">${v.address}</td>
             <td style="padding: 8px;">
                 <span style="padding: 2px 6px; border-radius: 4px; font-size: 10px; background-color: ${v.hasVoted ? '#dcfce7' : '#fef9c3'}; color: ${v.hasVoted ? '#166534' : '#854d0e'};">
@@ -360,7 +360,7 @@ export const RegistrarPartyPage: React.FC<RegistrarPartyPageProps> = ({ currentU
                                                     )}
                                                 </div>
                                             </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{voter.island}</td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">{voter.island.name}</td>
                                             <td className="px-6 py-4 whitespace-nowrap">
                                                 {voter.hasVoted ? (
                                                     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">

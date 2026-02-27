@@ -213,9 +213,9 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
-            v.fullName.toLowerCase().includes(q) ||
-            v.idCardNumber.toLowerCase().includes(q) ||
-            v.island.toLowerCase().includes(q) ||
+            (v.fullName && v.fullName.toLowerCase().includes(q)) ||
+            (v.idCardNumber && v.idCardNumber.toLowerCase().includes(q)) ||
+            (v.island && v.island.name && v.island.name.toLowerCase().includes(q)) ||
             (v.address && v.address.toLowerCase().includes(q))
         );
     }
@@ -401,7 +401,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{voter.island}</span>
+                                            <span className="font-medium">{voter.island.name}</span>
                                             <span className="text-xs text-gray-400">{voter.address}</span>
                                         </div>
                                     </td>

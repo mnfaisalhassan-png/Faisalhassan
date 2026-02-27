@@ -67,8 +67,9 @@ export const LiveResultsPage: React.FC<LiveResultsPageProps> = () => {
 
   const filteredModalVoters = useMemo(() => {
     return modalData.voters.filter(v => 
-      v.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.idCardNumber.toLowerCase().includes(searchTerm.toLowerCase())
+      (v.fullName && v.fullName.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (v.idCardNumber && v.idCardNumber.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (v.island && v.island.name && v.island.name.toLowerCase().includes(searchTerm.toLowerCase()))
     );
   }, [modalData.voters, searchTerm]);
 

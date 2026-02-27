@@ -259,10 +259,16 @@ const FormField = ({ icon: Icon, label, children, className }: { icon: React.Ele
   </div>
 );
 
+type FormDataType = Omit<Partial<Candidate>, 'island' | 'represent_party' | 'title'> & {
+  island: string | { id: string; name: string };
+  represent_party: string | { id: string; name: string };
+  title: string | { id: string; name: string };
+};
+
 const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parties, titles, onSave, onClose, onManageList }) => {
   const safeParties = filterAndEnsureValidKeys(parties);
   const safeTitles = filterAndEnsureValidKeys(titles);
-  const [formData, setFormData] = useState<Partial<Candidate> & { island: string; represent_party: string; title: string }>({
+  const [formData, setFormData] = useState<FormDataType>({
     candidate_no: candidate?.candidate_no?.toString() ?? '',
     id_card_number: candidate?.id_card_number ?? '',
     full_name: candidate?.full_name ?? '',
@@ -381,7 +387,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                     <div className="grid grid-cols-1 gap-3">
                         <FormField icon={Flag} label="Represent Party">
                             <div className="flex gap-1">
-                                <Select name="represent_party" value={formData.represent_party} onChange={handleChange} className="flex-grow">
+                                <Select name="represent_party" value={typeof formData.represent_party === 'object' ? formData.represent_party.name : formData.represent_party} onChange={handleChange} className="flex-grow">
                                     {safeParties.map(party => <option key={party.id} value={party.name}>{party.name}</option>)}
                                 </Select>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('party')} className="h-9 w-9">
@@ -391,7 +397,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                         </FormField>
                         <FormField icon={Briefcase} label="Title / Position">
                             <div className="flex gap-1">
-                                <Select name="title" value={formData.title} onChange={handleChange} className="flex-grow font-medium">
+                                <Select name="title" value={typeof formData.title === 'object' ? formData.title.name : formData.title} onChange={handleChange} className="flex-grow font-medium">
                                     {safeTitles.map(title => <option key={title.id} value={title.name}>{title.name}</option>)}
                                 </Select>
                                 <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('title')} className="h-9 w-9">

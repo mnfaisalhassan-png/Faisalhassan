@@ -181,11 +181,11 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
 
   // Group by Island
   const islandStats = voters.reduce((acc, curr) => {
-    if (!acc[curr.island]) {
-      acc[curr.island] = { total: 0, voted: 0 };
+    if (!acc[curr.island.name]) {
+      acc[curr.island.name] = { total: 0, voted: 0 };
     }
-    acc[curr.island].total++;
-    if (curr.hasVoted) acc[curr.island].voted++;
+    acc[curr.island.name].total++;
+    if (curr.hasVoted) acc[curr.island.name].voted++;
     return acc;
   }, {} as Record<string, { total: number; voted: number }>);
 
@@ -207,9 +207,9 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
     if (searchQuery) {
         const q = searchQuery.toLowerCase();
         return (
-            v.fullName.toLowerCase().includes(q) ||
-            v.idCardNumber.toLowerCase().includes(q) ||
-            v.island.toLowerCase().includes(q) ||
+            (v.fullName && v.fullName.toLowerCase().includes(q)) ||
+            (v.idCardNumber && v.idCardNumber.toLowerCase().includes(q)) ||
+            (v.island && v.island.name && v.island.name.toLowerCase().includes(q)) ||
             (v.address && v.address.toLowerCase().includes(q))
         );
     }
@@ -246,7 +246,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
           'Full Name': v.fullName,
           'ID Card': v.idCardNumber,
           'Gender': v.gender,
-          'Island': v.island,
+          'Island': v.island.name,
           'Address': v.address,
           'Contact': v.phoneNumber || '',
           'Party': v.registrarParty || '',
@@ -395,7 +395,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
                                     </td>
                                     <td className="px-6 py-4 text-sm text-gray-600">
                                         <div className="flex flex-col">
-                                            <span className="font-medium">{voter.island}</span>
+                                            <span className="font-medium">{voter.island.name}</span>
                                             <span className="text-xs text-gray-400">{voter.address}</span>
                                         </div>
                                     </td>
