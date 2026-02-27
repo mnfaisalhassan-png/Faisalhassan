@@ -9,8 +9,8 @@ const ENV_URL = import.meta.env.VITE_SUPABASE_URL;
 const ENV_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
 // Fallback to user-provided credentials
-const FALLBACK_URL = 'https://euasdsoflrgdfxaqfsll.supabase.co';
-const FALLBACK_KEY = 'sb_publishable_Oj0OfuH49xJ-hjxJtlBnMQ_tig7B6Wb';
+const FALLBACK_URL = 'https://hrvljfayyfmvoywiklgk.supabase.co';
+const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhydmxqZmF5eWZtdm95d2lrbGdrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzA3Mzc1ODQsImV4cCI6MjA4NjMxMzU4NH0._dimxoGLZaOnJCjDpooJm_PvhkJZVfHGPTs4JNZRMMI';
 
 const SUPABASE_URL = ENV_URL || FALLBACK_URL;
 const SUPABASE_KEY = ENV_KEY || FALLBACK_KEY;
@@ -45,6 +45,18 @@ export const storageService = {
   },
 
   // --- SYSTEM CHECKS ---
+
+  checkConnection: async (): Promise<{ success: boolean; message?: string; error?: any }> => {
+    try {
+      const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+      if (error) {
+        return { success: false, message: error.message, error };
+      }
+      return { success: true };
+    } catch (e) {
+      return { success: false, message: (e as Error).message, error: e };
+    }
+  },
 
   hasUsers: async (): Promise<boolean> => {
     // Check if users table exists and has data

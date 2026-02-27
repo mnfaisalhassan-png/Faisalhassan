@@ -40,6 +40,16 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
   const checkSystem = async () => {
       setIsCheckingSystem(true);
       try {
+          // 1. Check Basic Connectivity
+          const connection = await storageService.checkConnection();
+          if (!connection.success) {
+              console.error("Connection Check Failed:", connection);
+              setSetupRequired('db-error');
+              setError(`Database Error: ${connection.message || 'Unknown error'}`);
+              return;
+          }
+
+          // 2. Check for Users
           const hasUsers = await storageService.hasUsers();
           if (!hasUsers) {
               setSetupRequired('create-admin');
@@ -49,8 +59,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
       } catch (e) {
           const error = e as { message?: string };
           console.error("System Check Error:", error);
-          if (error.message && (error.message.includes('relation') || error.message.includes('does not exist'))) {
+          if (error.message && (error.message.includes('relation') || error.message.includes('does not exist') || error.message.includes('fetch'))) {
              setSetupRequired('db-error');
+             setError(`System Error: ${error.message}`);
           } else {
              setSetupRequired('none');
           }
@@ -196,10 +207,24 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess }) => {
                 <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
                     <Database className="h-8 w-8 text-red-600" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-2">Database Connection Required</h2>
-                <p className="text-gray-600 mb-6">Connect your Supabase project to proceed.</p>
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">Database Connection Failed</h2>
+                <p className="text-gray-600 mb-4">Could not connect to the Supabase project.</p>
+                
+                {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg mb-6 text-left font-mono text-xs overflow-auto max-h-32">
+                        <strong>Error Details:</strong><br/>
+                        {error}
+                    </div>
+                )}
+
                 <div className="bg-gray-900 text-left p-4 rounded-lg overflow-x-auto mb-6">
-                     <code className="text-xs text-green-400 font-mono">-- Run SQL setup script provided in previous steps --</code>
+                     <p className="text-gray-400 text-xs mb-2">Troubleshooting:</p>
+                     <ul className="text-xs text-gray-300 list-disc pl-4 space-y-1">
+                        <li>Check if your Supabase project is paused.</li>
+                        <li>Verify the API Key and URL in your code/env.</li>
+                        <li>Ensure the 'users' table exists in your database.</li>
+                        <li>Check Row Level Security (RLS) policies.</li>
+                     </ul>
                 </div>
                 <Button onClick={() => window.location.reload()}>Retry Connection</Button>
             </div>
