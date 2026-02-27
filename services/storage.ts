@@ -5,8 +5,15 @@ import { User, VoterRecord, ChatMessage, Task, AuditLog, AppNote, Announcement, 
 import { MOCK_ANNOUNCEMENTS } from './mock-data';
 
 // Supabase Configuration
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const ENV_URL = import.meta.env.VITE_SUPABASE_URL;
+const ENV_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+// Fallback to user-provided credentials
+const FALLBACK_URL = 'https://euasdsoflrgdfxaqfsll.supabase.co';
+const FALLBACK_KEY = 'sb_publishable_Oj0OfuH49xJ-hjxJtlBnMQ_tig7B6Wb';
+
+const SUPABASE_URL = ENV_URL || FALLBACK_URL;
+const SUPABASE_KEY = ENV_KEY || FALLBACK_KEY;
 
 export const isConfigured = !!(SUPABASE_URL && SUPABASE_KEY);
 
@@ -14,7 +21,7 @@ if (!isConfigured) {
   console.error("Missing Supabase URL or Key. Please check your environment variables.");
 }
 
-export const supabase = createClient(SUPABASE_URL || 'https://placeholder.supabase.co', SUPABASE_KEY || 'placeholder');
+export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 export const storageService = {
   // --- SESSION MANAGEMENT (Local Storage) ---
