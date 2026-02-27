@@ -177,11 +177,19 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
 
   // Group by Island
   const islandStats = voters.reduce((acc, curr) => {
-    if (!acc[curr.island]) {
-      acc[curr.island] = { total: 0, voted: 0 };
+    let islandName = (curr.island || 'Unknown').trim();
+
+    // Normalize N.Kudafari variations to fix duplicates
+    // This handles "N. Kudafari", "N.Kudafari ", "n.kudafari", etc.
+    if (islandName.toLowerCase().replace(/\s/g, '') === 'n.kudafari') {
+        islandName = 'N.Kudafari';
     }
-    acc[curr.island].total++;
-    if (curr.hasVoted) acc[curr.island].voted++;
+
+    if (!acc[islandName]) {
+      acc[islandName] = { total: 0, voted: 0 };
+    }
+    acc[islandName].total++;
+    if (curr.hasVoted) acc[islandName].voted++;
     return acc;
   }, {} as Record<string, { total: number; voted: number }>);
 
