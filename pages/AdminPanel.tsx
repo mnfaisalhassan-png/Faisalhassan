@@ -745,6 +745,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                 {editingUser ? (isSuperAdmin ? 'Edit User Profile' : 'View User Profile') : 'Create New User'}
             </div>
         }
+        maxWidth="sm:max-w-4xl"
         footer={
           <>
             <Button variant="secondary" onClick={() => setIsModalOpen(false)} disabled={isSaving}>Close</Button>
@@ -757,220 +758,176 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
           </>
         }
       >
-        <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2 custom-scrollbar">
-          {/* Basic Info */}
-          <div className="space-y-4 bg-gray-50 p-4 rounded-xl border border-gray-100">
-            <h3 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Credentials</h3>
-            <div className="flex items-center gap-4">
-              <div className="w-24">
-                <label className="block text-xs font-medium text-gray-700 mb-1">Profile Photo</label>
-                <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                  {profilePicturePreview ? (
-                    <img src={profilePicturePreview} alt="Profile" className="w-full h-full object-cover" />
-                  ) : (
-                    <UserIcon className="w-10 h-10 text-gray-400" />
-                  )}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Column: Identity & Credentials */}
+          <div className="col-span-12 sm:col-span-4 space-y-4">
+            
+            {/* Profile Picture */}
+            <div className="flex flex-col items-center p-4 bg-gray-50 rounded-xl border border-gray-100">
+                <div className="h-24 w-24 rounded-full bg-white overflow-hidden border-4 border-white shadow-md mb-3">
+                    {profilePicturePreview ? (
+                        <img src={profilePicturePreview} alt="Profile" className="h-full w-full object-cover" />
+                    ) : (
+                        <div className="h-full w-full flex items-center justify-center text-gray-300 bg-gray-100">
+                            <UserIcon className="h-10 w-10" />
+                        </div>
+                    )}
                 </div>
-                <input 
-                  type="file"
-                  accept="image/*"
-                  onChange={e => {
-                    if (e.target.files && e.target.files[0]) {
-                      setProfilePictureFile(e.target.files[0]);
-                      setProfilePicturePreview(URL.createObjectURL(e.target.files[0]));
-                    }
-                  }}
-                  className="text-xs mt-2 w-full"
-                  disabled={!isSuperAdmin || isSaving}
-                />
-              </div>
-              <div className="flex-1 space-y-4">
+                <label className={`cursor-pointer text-xs font-medium text-indigo-600 hover:text-indigo-800 bg-indigo-50 px-3 py-1 rounded-full transition-colors ${(!isSuperAdmin || isSaving) ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    Change Photo
+                    <input 
+                        type="file" 
+                        accept="image/*" 
+                        onChange={e => {
+                            if (e.target.files && e.target.files[0]) {
+                                setProfilePictureFile(e.target.files[0]);
+                                setProfilePicturePreview(URL.createObjectURL(e.target.files[0]));
+                            }
+                        }}
+                        className="hidden" 
+                        disabled={!isSuperAdmin || isSaving}
+                    />
+                </label>
+            </div>
+
+            {/* Credentials Inputs */}
+            <div className="space-y-3">
                 <Input 
                   label="Full Name" 
                   value={fullName} 
                   onChange={e => setFullName(e.target.value)} 
                   disabled={!isSuperAdmin || isSaving}
                   placeholder="John Doe"
+                  className="bg-white"
                 />
-                <div className="grid grid-cols-2 gap-4">
-                    <Input 
-                      label="Username" 
-                      value={username} 
-                      onChange={e => setUsername(e.target.value)} 
-                      disabled={!isSuperAdmin || isSaving}
-                      placeholder="johndoe"
-                    />
-                    <Input 
-                      label="Set New Password"
-                      value={password} 
-                      onChange={e => setPassword(e.target.value)} 
-                      type="text" 
-                      placeholder={editingUser ? "Leave blank to keep current" : "Required"} 
-                      disabled={!isSuperAdmin || isSaving}
-                    />
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Status Toggle */}
-          <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="flex items-center">
-                <div className={`p-2 rounded-full mr-3 ${isBlockedForm ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-                    {isBlockedForm ? <Lock className="h-5 w-5" /> : <Unlock className="h-5 w-5" />}
-                </div>
-                <div>
-                    <p className="text-sm font-medium text-gray-900">{isBlockedForm ? 'Account Blocked' : 'Account Active'}</p>
-                    <p className="text-xs text-gray-500">{isBlockedForm ? 'User cannot login' : 'User has full access'}</p>
-                </div>
-            </div>
-            <button 
-                type="button"
-                disabled={!isSuperAdmin || isSaving}
-                onClick={() => isSuperAdmin && setIsBlockedForm(!isBlockedForm)}
-                className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isBlockedForm ? 'bg-red-600' : 'bg-green-600'} ${(!isSuperAdmin || isSaving) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
-            >
-                <span className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isBlockedForm ? 'translate-x-5' : 'translate-x-0'}`} />
-            </button>
-          </div>
-
-          {/* Role Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Primary Role</label>
-            <div className="grid grid-cols-1 gap-2">
-                {[
-                    {id: 'superadmin', label: 'Super Admin', desc: 'Full system control', icon: Shield, color: 'text-red-600', bg: 'bg-red-50'},
-                    {id: 'admin', label: 'Administrator', desc: 'Manage voter data', icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50'},
-                    {id: 'candidate', label: 'Candidate', desc: 'View data & edit notes', icon: Monitor, color: 'text-orange-600', bg: 'bg-orange-50'},
-                    {id: 'mamdhoob', label: 'Mamdhoob', desc: 'Voting status & notes', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50'},
-                    {id: 'user', label: 'Standard User', desc: 'Basic read-only access', icon: UserIcon, color: 'text-green-600', bg: 'bg-green-50'},
-                ].map((r) => (
-                    <label 
-                        key={r.id} 
-                        className={`flex items-center p-2 border rounded-lg transition-all ${isSuperAdmin && !isSaving ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-75'} ${role === r.id ? `${r.bg} border-current ring-1 ring-offset-1` : ''}`}
-                        onClick={() => {
-                            if (isSuperAdmin && !isSaving) {
-                                handleRoleChange(r.id as UserRole);
-                            }
-                        }}
-                    >
-                        <input 
-                            type="radio" 
-                            name="role" 
-                            value={r.id} 
-                            checked={role === r.id} 
-                            onChange={() => {}} 
-                            disabled={!isSuperAdmin || isSaving} 
-                            className="sr-only" 
-                        />
-                        <r.icon className={`h-5 w-5 mr-3 ${r.color}`} />
-                        <div>
-                            <div className={`text-sm font-medium ${r.color}`}>{r.label}</div>
-                            <div className="text-xs text-gray-500">{r.desc}</div>
-                        </div>
-                        {role === r.id && <div className="ml-auto w-2 h-2 rounded-full bg-current text-gray-900"></div>}
-                    </label>
-                ))}
-            </div>
-          </div>
-
-          {/* Granular Permissions */}
-          <div className="border-t border-gray-200 pt-4">
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">Granular Permissions</label>
                 <Input 
-                    placeholder="Search..."
-                    value={permissionSearch}
-                    onChange={e => setPermissionSearch(e.target.value)}
-                    className="h-8 text-xs w-48"
+                  label="Username" 
+                  value={username} 
+                  onChange={e => setUsername(e.target.value)} 
+                  disabled={!isSuperAdmin || isSaving}
+                  placeholder="johndoe"
+                  className="bg-white"
                 />
-              </div>
-              <div className="bg-white border border-gray-200 rounded-lg overflow-hidden">
-                  
-                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase">
-                      Menu Visibility
-                  </div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.MENU_ACCESS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
-                          <div 
-                              key={perm.id}
-                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                          >
-                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
-                              <span className="text-xs font-medium">{perm.label}</span>
-                          </div>
-                      ))}
-                  </div>
+                <Input 
+                  label="Password"
+                  value={password} 
+                  onChange={e => setPassword(e.target.value)} 
+                  type="text" 
+                  placeholder={editingUser ? "Leave blank to keep" : "Required"} 
+                  disabled={!isSuperAdmin || isSaving}
+                  className="bg-white"
+                />
+            </div>
 
-                  {/* Menu Section */}
-                  <div className="bg-gray-50 px-3 py-2 border-b border-gray-200 text-xs font-bold text-gray-500 uppercase">
-                      Menu Access
-                  </div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.MENU.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
-                          <div 
-                              key={perm.id}
-                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                          >
-                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
-                              <span className="text-xs font-medium">{perm.label}</span>
-                          </div>
-                      ))}
-                  </div>
+            {/* Status Toggle */}
+            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <div className="flex items-center gap-2">
+                    <div className={`p-1.5 rounded-full ${isBlockedForm ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
+                        {isBlockedForm ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
+                    </div>
+                    <div>
+                        <p className="text-xs font-bold text-gray-900">{isBlockedForm ? 'Blocked' : 'Active'}</p>
+                    </div>
+                </div>
+                <button 
+                    type="button"
+                    disabled={!isSuperAdmin || isSaving}
+                    onClick={() => isSuperAdmin && setIsBlockedForm(!isBlockedForm)}
+                    className={`relative inline-flex h-5 w-9 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${isBlockedForm ? 'bg-red-600' : 'bg-green-600'} ${(!isSuperAdmin || isSaving) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                >
+                    <span className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${isBlockedForm ? 'translate-x-4' : 'translate-x-0'}`} />
+                </button>
+            </div>
+          </div>
 
-                  {/* Actions Section */}
-                  <div className="bg-gray-50 px-3 py-2 border-y border-gray-200 text-xs font-bold text-gray-500 uppercase">
-                      Global Actions & Visibility
-                  </div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.ACTIONS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
-                          <div 
-                              key={perm.id}
-                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                          >
-                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
-                              <span className="text-xs font-medium">{perm.label}</span>
-                          </div>
-                      ))}
-                  </div>
+          {/* Right Column: Roles & Permissions */}
+          <div className="col-span-12 sm:col-span-8 flex flex-col h-full max-h-[600px]">
+            
+            {/* Role Selection */}
+            <div className="mb-4">
+                <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Primary Role</label>
+                <div className="grid grid-cols-2 gap-2">
+                    {[
+                        {id: 'superadmin', label: 'Super Admin', desc: 'Full Control', icon: Shield, color: 'text-red-600', bg: 'bg-red-50'},
+                        {id: 'admin', label: 'Admin', desc: 'Manage Data', icon: Shield, color: 'text-purple-600', bg: 'bg-purple-50'},
+                        {id: 'candidate', label: 'Candidate', desc: 'View & Notes', icon: Monitor, color: 'text-orange-600', bg: 'bg-orange-50'},
+                        {id: 'mamdhoob', label: 'Mamdhoob', desc: 'Status & Notes', icon: Zap, color: 'text-blue-600', bg: 'bg-blue-50'},
+                        {id: 'user', label: 'User', desc: 'Read Only', icon: UserIcon, color: 'text-green-600', bg: 'bg-green-50'},
+                    ].map((r) => (
+                        <label 
+                            key={r.id} 
+                            className={`flex items-center p-2 border rounded-lg transition-all ${isSuperAdmin && !isSaving ? 'cursor-pointer hover:bg-gray-50' : 'cursor-not-allowed opacity-75'} ${role === r.id ? `${r.bg} border-current ring-1 ring-offset-1` : 'border-gray-200'}`}
+                            onClick={() => {
+                                if (isSuperAdmin && !isSaving) {
+                                    handleRoleChange(r.id as UserRole);
+                                }
+                            }}
+                        >
+                            <input 
+                                type="radio" 
+                                name="role" 
+                                value={r.id} 
+                                checked={role === r.id} 
+                                onChange={() => {}} 
+                                disabled={!isSuperAdmin || isSaving} 
+                                className="sr-only" 
+                            />
+                            <r.icon className={`h-4 w-4 mr-2 ${r.color}`} />
+                            <div>
+                                <div className={`text-xs font-bold ${r.color}`}>{r.label}</div>
+                                <div className="text-[10px] text-gray-500 leading-tight">{r.desc}</div>
+                            </div>
+                            {role === r.id && <div className="ml-auto w-1.5 h-1.5 rounded-full bg-current text-gray-900"></div>}
+                        </label>
+                    ))}
+                </div>
+            </div>
 
-                  {/* Metrics Section */}
-                  <div className="bg-gray-50 px-3 py-2 border-y border-gray-200 text-xs font-bold text-gray-500 uppercase">
-                      Election Overview Metrics
-                  </div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.METRICS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
-                          <div 
-                              key={perm.id}
-                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                          >
-                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
-                              <span className="text-xs font-medium">{perm.label}</span>
-                          </div>
-                      ))}
-                  </div>
-
-                  {/* Form Fields Section */}
-                  <div className="bg-gray-50 px-3 py-2 border-y border-gray-200 text-xs font-bold text-gray-500 uppercase">
-                      Voter Form Edit Access
-                  </div>
-                  <div className="p-3 grid grid-cols-2 gap-2">
-                      {PERMISSIONS.FORM_ACCESS.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase())).map(perm => (
-                          <div 
-                              key={perm.id}
-                              onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                              className={`flex items-center p-2 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-primary-50 text-primary-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                          >
-                              {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-4 w-4 mr-2 text-primary-600" /> : <Square className="h-4 w-4 mr-2 text-gray-400" />}
-                              <span className="text-xs font-medium">{perm.label}</span>
-                          </div>
-                      ))}
-                  </div>
-              </div>
+            {/* Granular Permissions */}
+            <div className="flex-1 flex flex-col min-h-0 border border-gray-200 rounded-xl overflow-hidden bg-white">
+                <div className="flex justify-between items-center px-3 py-2 bg-gray-50 border-b border-gray-200">
+                    <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider">Permissions</label>
+                    <Input 
+                        placeholder="Search..."
+                        value={permissionSearch}
+                        onChange={e => setPermissionSearch(e.target.value)}
+                        className="h-7 text-xs w-32 bg-white"
+                    />
+                </div>
+                
+                <div className="overflow-y-auto p-0 custom-scrollbar flex-1">
+                    {[
+                        { title: 'Menu Visibility', items: PERMISSIONS.MENU_ACCESS },
+                        { title: 'Menu Access', items: PERMISSIONS.MENU },
+                        { title: 'Global Actions', items: PERMISSIONS.ACTIONS },
+                        { title: 'Metrics', items: PERMISSIONS.METRICS },
+                        { title: 'Form Access', items: PERMISSIONS.FORM_ACCESS },
+                    ].map((section, idx) => {
+                        const filteredItems = section.items.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase()));
+                        if (filteredItems.length === 0) return null;
+                        
+                        return (
+                            <div key={idx} className="border-b border-gray-100 last:border-0">
+                                <div className="bg-gray-50/50 px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 backdrop-blur-sm">
+                                    {section.title}
+                                </div>
+                                <div className="p-2 grid grid-cols-2 gap-1">
+                                    {filteredItems.map(perm => (
+                                        <div 
+                                            key={perm.id}
+                                            onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
+                                            className={`flex items-center px-2 py-1.5 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-50 text-gray-600'}`}
+                                        >
+                                            {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-3.5 w-3.5 mr-2 text-indigo-600 flex-shrink-0" /> : <Square className="h-3.5 w-3.5 mr-2 text-gray-300 flex-shrink-0" />}
+                                            <span className="text-[11px] font-medium leading-tight">{perm.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
           </div>
         </div>
       </Modal>
