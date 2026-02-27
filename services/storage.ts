@@ -313,6 +313,34 @@ export const storageService = {
     if (error) throw error;
   },
 
+  getVotingBoxes: async (): Promise<{ id: string; name: string }[]> => {
+    const { data, error } = await supabase.from('voting_boxes').select('id, name').order('name');
+    if (error) {
+      console.error('Error fetching voting boxes:', error);
+      return [];
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      name: typeof item.name === 'object' && item.name !== null ? item.name.name || '' : item.name
+    }));
+  },
+
+  addVotingBox: async (name: string) => {
+    const { error } = await supabase.from('voting_boxes').insert([{ name }]);
+    if (error) throw error;
+  },
+
+  deleteVotingBox: async (id: string) => {
+    const { error } = await supabase.from('voting_boxes').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  updateVotingBox: async (id: string, newName: string) => {
+    const { error } = await supabase.from('voting_boxes').update({ name: newName }).eq('id', id);
+    if (error) throw error;
+  },
+
   // --- SETTINGS: ELECTION CONFIG ---
 
   getElectionSettings: async (): Promise<{ electionStart: number, electionEnd: number }> => {

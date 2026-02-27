@@ -32,6 +32,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [islands, setIslands] = useState<{ id: string; name: string }[]>([]);
   const [parties, setParties] = useState<{ id: string; name: string }[]>([]);
+  const [votingBoxes, setVotingBoxes] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,8 +91,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [isAddPartyModalOpen, setIsAddPartyModalOpen] = useState(false);
   const [newPartyName, setNewPartyName] = useState('');
 
+  // Add Voting Box Modal State
+  const [isAddVotingBoxModalOpen, setIsAddVotingBoxModalOpen] = useState(false);
+  const [newVotingBoxName, setNewVotingBoxName] = useState('');
+
   // Manage List State (Admin Only)
-  const [manageTarget, setManageTarget] = useState<'island' | 'party' | null>(null);
+  const [manageTarget, setManageTarget] = useState<'island' | 'party' | 'votingBox' | null>(null);
   const [editingItemIndex, setEditingItemIndex] = useState<number | null>(null);
   const [editingItemValue, setEditingItemValue] = useState('');
 
@@ -159,18 +164,21 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const refreshData = async () => {
     setIsLoading(true);
     try {
-        const [v, i, p] = await Promise.all([
+        const [v, i, p, vb] = await Promise.all([
             storageService.getVoters(),
             storageService.getIslands(),
-            storageService.getParties()
+            storageService.getParties(),
+            storageService.getVotingBoxes()
         ]);
         setVoters(v);
         setIslands(i);
         setParties(p);
+        setVotingBoxes(vb);
         
         // Set defaults if lists are empty but we have data
         if (i.length > 0 && !island) setIsland(i[0].name);
         if (p.length > 0 && !registrarParty) setRegistrarParty(p[0].name);
+        if (vb.length > 0 && !votingBoxNumber) setVotingBoxNumber(vb[0].name);
         
     } catch (e) {
         console.error(e);
@@ -700,11 +708,29 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
       setTimeout(() => setNotification(null), 3000);
     };
 
+  const handleAddVotingBox = async () => {
+      if (!canEditVoted) return; // Assuming permission to edit voting status allows managing boxes
+      if (!newVotingBoxName.trim()) return;
+      try {
+        await storageService.addVotingBox(newVotingBoxName.trim());
+        await storageService.createAuditLog('add_voting_box', `Added voting box: ${newVotingBoxName.trim()}`, currentUser);
+        await refreshData();
+        setVotingBoxNumber(newVotingBoxName.trim());
+        setNewVotingBoxName('');
+        setIsAddVotingBoxModalOpen(false);
+        setNotification({ msg: 'Voting Box added successfully!', type: 'success' });
+      } catch {
+        setNotification({ msg: 'Failed to add voting box', type: 'error' });
+      }
+      setTimeout(() => setNotification(null), 3000);
+    };
+
   const saveManagedItem = async (index: number) => {
     if (!canEditLocation && manageTarget === 'island') return;
     if (!canEditParty && manageTarget === 'party') return;
+    if (!canEditVoted && manageTarget === 'votingBox') return;
 
-    const originalItems = manageTarget === 'island' ? islands : parties;
+    const originalItems = manageTarget === 'island' ? islands : manageTarget === 'party' ? parties : votingBoxes;
     const itemToUpdate = originalItems[index];
 
     if (!editingItemValue.trim() || editingItemValue.trim() === itemToUpdate.name) {
@@ -716,9 +742,12 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
       if (manageTarget === 'island') {
         await storageService.updateIsland(itemToUpdate.id, editingItemValue.trim());
         await storageService.createAuditLog('update_island', `Renamed island from "${itemToUpdate.name}" to "${editingItemValue.trim()}"`, currentUser);
-      } else {
+      } else if (manageTarget === 'party') {
         await storageService.updateParty(itemToUpdate.id, editingItemValue.trim());
         await storageService.createAuditLog('update_party', `Renamed party from "${itemToUpdate.name}" to "${editingItemValue.trim()}"`, currentUser);
+      } else {
+        await storageService.updateVotingBox(itemToUpdate.id, editingItemValue.trim());
+        await storageService.createAuditLog('update_voting_box', `Renamed voting box from "${itemToUpdate.name}" to "${editingItemValue.trim()}"`, currentUser);
       }
       await refreshData();
       setEditingItemIndex(null);
@@ -739,11 +768,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             await storageService.deleteIsland(itemToDelete.id);
             await storageService.createAuditLog('delete_island', `Deleted island: ${itemToDelete.name}`, currentUser);
             if (island === itemToDelete.name) setIsland(islands.length > 1 ? islands.find(i => i.id !== itemToDelete.id)?.name || '' : '');
-        } else {
+        } else if (manageTarget === 'party') {
             const itemToDelete = parties[index];
             await storageService.deleteParty(itemToDelete.id);
             await storageService.createAuditLog('delete_party', `Deleted party: ${itemToDelete.name}`, currentUser);
             if (registrarParty === itemToDelete.name) setRegistrarParty(parties.length > 1 ? parties.find(p => p.id !== itemToDelete.id)?.name || '' : '');
+        } else {
+            const itemToDelete = votingBoxes[index];
+            await storageService.deleteVotingBox(itemToDelete.id);
+            await storageService.createAuditLog('delete_voting_box', `Deleted voting box: ${itemToDelete.name}`, currentUser);
+            if (votingBoxNumber === itemToDelete.name) setVotingBoxNumber(votingBoxes.length > 1 ? votingBoxes.find(vb => vb.id !== itemToDelete.id)?.name || '' : '');
         }
         await refreshData();
         setNotification({ msg: 'Item deleted from list', type: 'success' });
@@ -1414,14 +1448,38 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                         </div>
 
                                         <div className="mt-3">
-                                            <Input 
-                                                label="Voting Box Number" 
-                                                placeholder="e.g. Box 1" 
-                                                value={votingBoxNumber} 
-                                                onChange={e => setVotingBoxNumber(e.target.value)}
-                                                disabled={isReadOnlyMode || !canEditVoted}
-                                                className="h-8 text-xs bg-white/80"
-                                            />
+                                            <label className="block text-[10px] font-medium text-gray-500 mb-1">Voting Box Number</label>
+                                            <div className="flex gap-2">
+                                                <select 
+                                                    className={`block w-full h-8 text-xs border border-gray-300 rounded-lg bg-white/80 ${isReadOnlyMode || !canEditVoted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                    value={votingBoxNumber}
+                                                    onChange={e => setVotingBoxNumber(e.target.value)}
+                                                    disabled={isReadOnlyMode || !canEditVoted}
+                                                >
+                                                    <option value="">Select Box...</option>
+                                                    {votingBoxes.map(box => <option key={box.id} value={box.name}>{box.name}</option>)}
+                                                </select>
+                                                {canEditVoted && !isReadOnlyMode && (
+                                                    <div className="flex gap-1">
+                                                        <button 
+                                                            onClick={() => setIsAddVotingBoxModalOpen(true)}
+                                                            className="h-8 w-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-200 transition-colors"
+                                                            title="Add New Box"
+                                                            type="button"
+                                                        >
+                                                            <Plus className="h-3 w-3" />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => setManageTarget('votingBox')}
+                                                            className="h-8 w-8 flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg border border-gray-200 transition-colors"
+                                                            title="Manage Boxes"
+                                                            type="button"
+                                                        >
+                                                            <Settings className="h-3 w-3" />
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
                                         </div>
                                     </div>
 
@@ -1630,6 +1688,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
           </div>
       </Modal>
 
+      {/* Add Voting Box Modal */}
+      <Modal
+        isOpen={isAddVotingBoxModalOpen}
+        onClose={() => setIsAddVotingBoxModalOpen(false)}
+        title="Add New Voting Box"
+        footer={
+            <>
+                <Button variant="secondary" onClick={() => setIsAddVotingBoxModalOpen(false)}>Cancel</Button>
+                <Button onClick={handleAddVotingBox}>Add Box</Button>
+            </>
+        }
+      >
+          <div className="space-y-4">
+              <p className="text-sm text-gray-500">Enter the name/number of the new voting box.</p>
+              <Input 
+                  label="Voting Box Name"
+                  value={newVotingBoxName}
+                  onChange={e => setNewVotingBoxName(e.target.value)}
+                  placeholder="e.g. Box 1"
+                  icon={<Award className="h-5 w-5 text-gray-400" />}
+              />
+          </div>
+      </Modal>
+
       {/* List Management Modal */}
       <Modal
             isOpen={!!manageTarget}
@@ -1637,13 +1719,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                 setManageTarget(null);
                 setEditingItemIndex(null);
             }}
-            title={manageTarget === 'island' ? 'Manage Islands' : 'Manage Parties'}
+            title={manageTarget === 'island' ? 'Manage Islands' : manageTarget === 'party' ? 'Manage Parties' : 'Manage Voting Boxes'}
             footer={
                 <Button variant="secondary" onClick={() => setManageTarget(null)}>Close</Button>
             }
         >
             <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 pr-1">
-                {(manageTarget === 'island' ? islands : parties).map((item, index) => (
+                {(manageTarget === 'island' ? islands : manageTarget === 'party' ? parties : votingBoxes).map((item, index) => (
                     <div key={item.id} className="py-3 flex items-center justify-between group">
                         {editingItemIndex === index ? (
                             <div className="flex-1 flex items-center space-x-2">
@@ -1682,7 +1764,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                         )}
                     </div>
                 ))}
-                {(manageTarget === 'island' ? islands : parties).length === 0 && <p className="text-gray-400 text-sm text-center py-4">No items found.</p>}
+                {(manageTarget === 'island' ? islands : manageTarget === 'party' ? parties : votingBoxes).length === 0 && <p className="text-gray-400 text-sm text-center py-4">No items found.</p>}
             </div>
       </Modal>
 
