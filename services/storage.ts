@@ -46,9 +46,9 @@ export const storageService = {
 
   // --- SYSTEM CHECKS ---
 
-  checkConnection: async (): Promise<{ success: boolean; message?: string; error?: any }> => {
+  checkConnection: async (): Promise<{ success: boolean; message?: string; error?: unknown }> => {
     try {
-      const { data, error } = await supabase.from('users').select('count', { count: 'exact', head: true });
+      const { error } = await supabase.from('users').select('count', { count: 'exact', head: true });
       if (error) {
         return { success: false, message: error.message, error };
       }

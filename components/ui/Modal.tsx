@@ -1,5 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import Draggable from 'react-draggable';
 
 interface ModalProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface ModalProps {
 }
 
 export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, footer, maxWidth = 'sm:max-w-md' }) => {
+  const nodeRef = useRef(null);
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
       if (e.key === 'Escape') onClose();
@@ -28,24 +30,26 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children, 
         
         <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
         
-        <div className={`inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full ${maxWidth}`}>
-          <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-            <div className="flex justify-between items-start">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
-              <button onClick={onClose} className="text-gray-400 hover:text-gray-500 focus:outline-none">
-                <X className="h-5 w-5" />
-              </button>
+        <Draggable nodeRef={nodeRef} handle=".modal-handle">
+          <div ref={nodeRef} className={`inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle w-full ${maxWidth}`}>
+            <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+              <div className="flex justify-between items-start modal-handle cursor-move">
+                <h3 className="text-lg leading-6 font-medium text-gray-900">{title}</h3>
+                <button onClick={onClose} className="text-gray-400 hover:text-gray-500 focus:outline-none">
+                  <X className="h-5 w-5" />
+                </button>
+              </div>
+              <div className="mt-4">
+                {children}
+              </div>
             </div>
-            <div className="mt-4">
-              {children}
-            </div>
+            {footer && (
+              <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end space-x-2">
+                {footer}
+              </div>
+            )}
           </div>
-          {footer && (
-            <div className="bg-gray-50 px-4 py-3 sm:px-6 flex justify-end space-x-2">
-              {footer}
-            </div>
-          )}
-        </div>
+        </Draggable>
       </div>
     </div>
   );

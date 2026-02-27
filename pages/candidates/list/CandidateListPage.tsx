@@ -5,7 +5,6 @@ import { Button } from '../../../components/ui/Button';
 import { Modal } from '../../../components/ui/Modal';
 import { Input } from '../../../components/ui/Input';
 import { Select } from '../../../components/ui/Select';
-import { Textarea } from '../../../components/ui/Textarea';
 import { PlusCircle, Edit, Trash2, Eye, User as UserIcon, Fingerprint, MapPin, Phone, Flag, Briefcase, Save } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ConfirmationModal } from '../../../components/ui/ConfirmationModal';
@@ -261,7 +260,6 @@ const FormField = ({ icon: Icon, label, children, className }: { icon: React.Ele
 );
 
 const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parties, titles, onSave, onClose, onManageList }) => {
-  const safeIslands = filterAndEnsureValidKeys(islands);
   const safeParties = filterAndEnsureValidKeys(parties);
   const safeTitles = filterAndEnsureValidKeys(titles);
   const [formData, setFormData] = useState<Partial<Candidate> & { island: string; represent_party: string; title: string }>({
@@ -337,21 +335,6 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                     <FormField icon={Fingerprint} label="Candidate No">
                         <Input name="candidate_no" type="number" value={formData.candidate_no} onChange={handleChange} placeholder="#" className="bg-white" />
                     </FormField>
-                    <FormField icon={Fingerprint} label="ID Card No">
-                        <Input name="id_card_number" value={formData.id_card_number} onChange={handleChange} placeholder="AXXXXXX" className="bg-white" />
-                    </FormField>
-                     <FormField icon={UserIcon} label="Gender">
-                        <div className="flex items-center space-x-3 mt-1 bg-white p-2 rounded-md border border-gray-200">
-                            <label className="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="gender" value="Male" checked={formData.gender === 'Male'} onChange={handleChange} className="form-radio h-3.5 w-3.5 text-indigo-600" />
-                                <span className="ml-1.5 text-sm text-gray-700">Male</span>
-                            </label>
-                            <label className="inline-flex items-center cursor-pointer">
-                                <input type="radio" name="gender" value="Female" checked={formData.gender === 'Female'} onChange={handleChange} className="form-radio h-3.5 w-3.5 text-pink-600" />
-                                <span className="ml-1.5 text-sm text-gray-700">Female</span>
-                            </label>
-                        </div>
-                    </FormField>
                 </div>
             </div>
 
@@ -362,27 +345,32 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                         <UserIcon className="h-3 w-3 mr-1.5" /> Personal Details
                     </h3>
                     <div className="space-y-3">
+                        <FormField icon={Fingerprint} label="ID Card No">
+                            <Input name="id_card_number" value={formData.id_card_number} onChange={handleChange} placeholder="AXXXXXX" className="bg-white" />
+                        </FormField>
                         <FormField icon={UserIcon} label="Full Name">
                             <Input name="full_name" value={formData.full_name} onChange={handleChange} required placeholder="Full Name" className="text-lg font-medium" />
                         </FormField>
+                        <FormField icon={MapPin} label="Address">
+                            <Input name="address" value={formData.address} onChange={handleChange} placeholder="Residential Address" />
+                        </FormField>
                         <div className="grid grid-cols-2 gap-3">
-                             <FormField icon={Phone} label="Contact No">
-                                <Input name="contact_no" value={formData.contact_no} onChange={handleChange} placeholder="Phone" />
-                            </FormField>
-                            <FormField icon={MapPin} label="Island">
-                                <div className="flex gap-1">
-                                    <Select name="island" value={formData.island} onChange={handleChange} className="flex-grow text-sm">
-                                        {safeIslands.map(island => <option key={island.id} value={island.name}>{island.name}</option>)}
-                                    </Select>
-                                    <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('island')} className="h-9 w-9">
-                                        <Edit className="h-3 w-3" />
-                                    </Button>
+                            <FormField icon={UserIcon} label="Gender">
+                                <div className="flex items-center space-x-3 mt-1 bg-white p-2 rounded-md border border-gray-200">
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="radio" name="gender" value="Male" checked={formData.gender === 'Male'} onChange={handleChange} className="form-radio h-3.5 w-3.5 text-indigo-600" />
+                                        <span className="ml-1.5 text-sm text-gray-700">Male</span>
+                                    </label>
+                                    <label className="inline-flex items-center cursor-pointer">
+                                        <input type="radio" name="gender" value="Female" checked={formData.gender === 'Female'} onChange={handleChange} className="form-radio h-3.5 w-3.5 text-pink-600" />
+                                        <span className="ml-1.5 text-sm text-gray-700">Female</span>
+                                    </label>
                                 </div>
                             </FormField>
+                            <FormField icon={Phone} label="Contact No">
+                                <Input name="contact_no" value={formData.contact_no} onChange={handleChange} placeholder="Phone" />
+                            </FormField>
                         </div>
-                        <FormField icon={MapPin} label="Address">
-                            <Textarea name="address" value={formData.address} onChange={handleChange} placeholder="Residential Address" className="min-h-[60px] text-sm resize-none" />
-                        </FormField>
                     </div>
                 </div>
 

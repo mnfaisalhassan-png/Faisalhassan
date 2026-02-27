@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { storageService, isConfigured } from './services/storage';
+import { storageService } from './services/storage';
 import { User, PageView } from './types';
 import { Login } from './pages/Login';
 import { VotersDirectoryPage } from './pages/VotersDirectoryPage';
@@ -26,7 +26,7 @@ import { CandidatesPage } from './pages/CandidatesPage';
 import { Layout } from './components/Layout';
 
 
-import { CheckCircle, AlertTriangle } from 'lucide-react';
+import { CheckCircle } from 'lucide-react';
 
 const NavigationController = ({ activePage }: { activePage: PageView }) => {
   const navigate = useNavigate();
