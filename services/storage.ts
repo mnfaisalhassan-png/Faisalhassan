@@ -150,6 +150,7 @@ export const storageService = {
       island: v.island,
       phoneNumber: v.phone_number,
       hasVoted: v.has_voted,
+      votingBoxNumber: v.voting_box_number,
       registrarParty: v.registrar_party,
       sheema: v.sheema,
       sadiq: v.shadda,
@@ -170,6 +171,7 @@ export const storageService = {
       island: voter.island,
       phone_number: voter.phoneNumber,
       has_voted: voter.hasVoted,
+      voting_box_number: voter.votingBoxNumber,
       registrar_party: voter.registrarParty,
       sheema: voter.sheema,
       shadda: voter.sadiq,
@@ -190,6 +192,7 @@ export const storageService = {
       island: voter.island,
       phone_number: voter.phoneNumber,
       has_voted: voter.hasVoted,
+      voting_box_number: voter.votingBoxNumber,
       registrar_party: voter.registrarParty,
       sheema: voter.sheema,
       shadda: voter.sadiq,
@@ -232,7 +235,11 @@ export const storageService = {
       console.error('Error fetching islands:', error);
       return [];
     }
-    return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      name: typeof item.name === 'object' && item.name !== null ? item.name.name || '' : item.name
+    }));
   },
 
   addIsland: async (name: string) => {
@@ -251,7 +258,11 @@ export const storageService = {
       console.error('Error fetching parties:', error);
       return [];
     }
-    return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      name: typeof item.name === 'object' && item.name !== null ? item.name.name || '' : item.name
+    }));
   },
 
   addParty: async (name: string) => {
@@ -280,7 +291,11 @@ export const storageService = {
       console.error('Error fetching titles:', error);
       return [];
     }
-    return data;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return data.map((item: any) => ({
+      id: item.id,
+      name: typeof item.name === 'object' && item.name !== null ? item.name.name || '' : item.name
+    }));
   },
 
   addTitle: async (name: string) => {
@@ -640,10 +655,19 @@ export const storageService = {
 
     const getRelation = (rel: { id: string; name: string } | { id: string; name: string }[] | null) => {
       if (!rel) return { id: '', name: '' };
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const getName = (item: any) => {
+        if (typeof item.name === 'object' && item.name !== null) {
+          return item.name.name || '';
+        }
+        return item.name || '';
+      };
+
       if (Array.isArray(rel)) {
-        return rel.length > 0 ? { id: rel[0].id, name: rel[0].name } : { id: '', name: '' };
+        return rel.length > 0 ? { id: rel[0].id, name: getName(rel[0]) } : { id: '', name: '' };
       }
-      return { id: rel.id, name: rel.name };
+      return { id: rel.id, name: getName(rel) };
     };
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

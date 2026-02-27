@@ -74,6 +74,7 @@ export interface VoterRecord {
   island: string;
   phoneNumber?: string;
   hasVoted: boolean;
+  votingBoxNumber?: string;
   registrarParty?: string;
   sheema?: boolean;
   sadiq?: boolean;

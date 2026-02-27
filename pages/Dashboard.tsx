@@ -60,6 +60,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [island, setIsland] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [hasVoted, setHasVoted] = useState(false);
+  const [votingBoxNumber, setVotingBoxNumber] = useState('');
   
   // New Fields
   const [registrarParty, setRegistrarParty] = useState('');
@@ -443,6 +444,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setIsland(islands[0] || '');
     setPhoneNumber('');
     setHasVoted(false);
+    setVotingBoxNumber('');
     setRegistrarParty(parties[0] || '');
     setSheema(false);
     setSadiq(false);
@@ -472,6 +474,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setIsland(voter.island);
     setPhoneNumber(voter.phoneNumber || '');
     setHasVoted(voter.hasVoted);
+    setVotingBoxNumber(voter.votingBoxNumber || '');
     setRegistrarParty(voter.registrarParty || parties[0] || '');
     setSheema(voter.sheema || false);
     setSadiq(voter.sadiq || false);
@@ -553,6 +556,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             island,
             phoneNumber,
             hasVoted,
+            votingBoxNumber,
             registrarParty,
             sheema,
             sadiq,
@@ -1407,6 +1411,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                 <span>No</span>
                                                 <span>Yes</span>
                                             </div>
+                                        </div>
+
+                                        <div className="mt-3">
+                                            <Input 
+                                                label="Voting Box Number" 
+                                                placeholder="e.g. Box 1" 
+                                                value={votingBoxNumber} 
+                                                onChange={e => setVotingBoxNumber(e.target.value)}
+                                                disabled={isReadOnlyMode || !canEditVoted}
+                                                className="h-8 text-xs bg-white/80"
+                                            />
                                         </div>
                                     </div>
 
