@@ -88,6 +88,12 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'edit_voter_notes', label: 'Edit Notepad' },
         { id: 'edit_voter_shafaa', label: 'Shafaa check box' },
         { id: 'edit_voter_mashey', label: 'Mashey check box' },
+    ],
+    CANDIDATE_ACTIONS: [
+        { id: 'action_create_candidate', label: 'Create New Candidate' },
+        { id: 'action_view_candidate', label: 'View Candidate' },
+        { id: 'action_edit_candidate', label: 'Edit Candidate' },
+        { id: 'action_delete_candidate', label: 'Delete Candidate' },
     ]
 };
 
@@ -902,6 +908,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                         { title: 'Global Actions', items: PERMISSIONS.ACTIONS },
                         { title: 'Metrics', items: PERMISSIONS.METRICS },
                         { title: 'Form Access', items: PERMISSIONS.FORM_ACCESS },
+                        { title: 'Candidate Actions', items: PERMISSIONS.CANDIDATE_ACTIONS },
                     ].map((section, idx) => {
                         const filteredItems = section.items.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase()));
                         if (filteredItems.length === 0) return null;
