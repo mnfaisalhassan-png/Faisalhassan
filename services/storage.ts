@@ -8,7 +8,9 @@ import { MOCK_ANNOUNCEMENTS } from './mock-data';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_KEY) {
+export const isConfigured = !!(SUPABASE_URL && SUPABASE_KEY);
+
+if (!isConfigured) {
   console.error("Missing Supabase URL or Key. Please check your environment variables.");
 }
 

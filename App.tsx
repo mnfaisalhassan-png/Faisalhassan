@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { storageService } from './services/storage';
+import { storageService, isConfigured } from './services/storage';
 import { User, PageView } from './types';
 import { Login } from './pages/Login';
 import { VotersDirectoryPage } from './pages/VotersDirectoryPage';
@@ -26,7 +26,7 @@ import { CandidatesPage } from './pages/CandidatesPage';
 import { Layout } from './components/Layout';
 
 
-import { CheckCircle } from 'lucide-react';
+import { CheckCircle, AlertTriangle } from 'lucide-react';
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -184,6 +184,12 @@ const App: React.FC = () => {
 
   return (
     <>
+        {!isConfigured && (
+            <div className="bg-red-600 text-white px-4 py-2 text-center text-sm font-bold flex items-center justify-center gap-2 fixed top-0 left-0 right-0 z-[200]">
+                <AlertTriangle className="h-4 w-4" />
+                <span>Database Not Connected: Please configure VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your deployment settings.</span>
+            </div>
+        )}
         {welcomeMessage && (
             <div className="fixed top-6 right-6 z-[100] animate-slide-up">
                  <div className="bg-white rounded-xl shadow-2xl border border-green-100 p-4 flex items-center gap-4 pr-6 relative overflow-hidden">
@@ -205,7 +211,7 @@ const App: React.FC = () => {
             onNavigate={setCurrentPage} 
             onLogout={handleLogout}
           >
-            <div className="w-full h-full aspect-square">
+            <div className={`w-full h-full aspect-square ${!isConfigured ? 'pt-8' : ''}`}>
               <Routes>
                 <Route path="/candidates/*" element={<CandidatesPage currentUser={user} />} />
                 <Route path="/*" element={renderContent()} />

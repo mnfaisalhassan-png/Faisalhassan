@@ -638,7 +638,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                       className="h-8 text-xs w-48"
                   />
                   {isSuperAdmin && (
-                      <Button onClick={handleOpenCreate} className="shadow-lg shadow-green-500/20 bg-green-600 hover:bg-green-700 text-white border-transparent">
+                      <Button onClick={handleOpenCreate} size="sm" className="shadow-lg shadow-green-500/20 bg-green-600 hover:bg-green-700 text-white border-transparent whitespace-nowrap">
                         <UserPlus className="h-4 w-4 mr-2" /> New User
                       </Button>
                   )}
