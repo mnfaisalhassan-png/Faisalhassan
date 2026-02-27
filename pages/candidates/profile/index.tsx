@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { User, Candidate } from '../../../types';
 import { storageService } from '../../../services/storage';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 
 interface CandidateProfilePageProps {
   currentUser: User;
@@ -9,6 +11,7 @@ interface CandidateProfilePageProps {
 
 export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
 
   useEffect(() => {
@@ -27,7 +30,16 @@ export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = () => {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-8 space-y-6">
+      <Button 
+        variant="secondary" 
+        onClick={() => navigate('/candidates')}
+        className="mb-4"
+      >
+        <ArrowLeft className="h-4 w-4 mr-2" />
+        Back to List
+      </Button>
+
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <div className="p-8">
           <div className="flex items-center space-x-6 mb-8">

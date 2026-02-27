@@ -21,12 +21,27 @@ import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { TasksPage } from './pages/TasksPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { CandidatesPage } from './pages/CandidatesPage';
 import { Layout } from './components/Layout';
 
 
 import { CheckCircle, AlertTriangle } from 'lucide-react';
+
+const NavigationController = ({ activePage }: { activePage: PageView }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (activePage === 'candidates' && !location.pathname.startsWith('/candidates')) {
+      navigate('/candidates');
+    } else if (activePage !== 'candidates' && location.pathname.startsWith('/candidates')) {
+      navigate('/');
+    }
+  }, [activePage, location.pathname, navigate]);
+
+  return null;
+};
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
@@ -44,7 +59,11 @@ const App: React.FC = () => {
         const storedUser = storageService.getCurrentUser();
         if (storedUser) {
             setUser(storedUser);
-            setCurrentPage('election-overview');
+            if (window.location.pathname.startsWith('/candidates')) {
+                setCurrentPage('candidates');
+            } else {
+                setCurrentPage('election-overview');
+            }
         }
         setIsLoading(false);
     };
@@ -199,6 +218,7 @@ const App: React.FC = () => {
             </div>
         )}
         <Router>
+          <NavigationController activePage={currentPage} />
           <Layout 
             user={user} 
             activePage={currentPage} 
@@ -207,8 +227,14 @@ const App: React.FC = () => {
           >
             <div className="w-full h-full aspect-square">
               <Routes>
-                <Route path="/candidates/*" element={<CandidatesPage currentUser={user} />} />
-                <Route path="/*" element={renderContent()} />
+                {currentPage === 'candidates' ? (
+                  <>
+                    <Route path="/candidates/*" element={<CandidatesPage currentUser={user} />} />
+                    <Route path="*" element={<Navigate to="/candidates" replace />} />
+                  </>
+                ) : (
+                  <Route path="/*" element={renderContent()} />
+                )}
               </Routes>
             </div>
           </Layout>
