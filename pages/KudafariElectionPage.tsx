@@ -103,22 +103,36 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
 
   // --- PERMISSIONS LOGIC ---
   const hasPermission = (perm: string) => {
-      // Super Admin/Admin always true
-      if (currentUser.role === 'superadmin' || currentUser.role === 'admin' || (currentUser.username || '').toLowerCase() === 'faisalhassan') return true;
-      
-      // If granular permissions exist, respect them
-      if (currentUser.permissions && currentUser.permissions.length > 0) {
-          return currentUser.permissions.includes(perm);
-      }
-      
-      // Fallback for backward compatibility (legacy accounts)
-      const isStandardUser = currentUser.role === 'user';
-      if (['view_metric_total_registered', 'view_metric_votes_cast', 'view_metric_pending_votes'].includes(perm)) return true;
-      
-      // Candidates/Mamdhoob see everything else by default in legacy mode
-      if (!isStandardUser) return true;
-      
-      return false;
+    // Super Admin and Admin have all permissions by default.
+    if (currentUser.role === 'superadmin' || currentUser.role === 'admin' || (currentUser.username || '').toLowerCase() === 'faisalhassan') {
+      return true;
+    }
+
+    // If a user has a specific list of permissions, check against that list.
+    if (currentUser.permissions && currentUser.permissions.length > 0) {
+      return currentUser.permissions.includes(perm);
+    }
+
+    // --- Fallback for legacy roles without a defined permissions array ---
+    // IMPORTANT: This section should only grant VIEW permissions. Actions like exporting must be explicitly assigned.
+    
+    // For any permission that is an action (like exporting), default to false if not explicitly granted.
+    if (perm.startsWith('action_')) {
+        return false;
+    }
+
+    // For view permissions, allow legacy roles to see metrics.
+    if (perm.startsWith('view_metric_')) {
+        // 'user' role can only see a limited set of metrics in legacy mode.
+        if (currentUser.role === 'user') {
+            return ['view_metric_total_registered', 'view_metric_votes_cast', 'view_metric_pending_votes'].includes(perm);
+        }
+        // Other legacy roles (candidate, mamdhoob) can see all metrics.
+        return true;
+    }
+
+    // Deny any other unhandled permission by default.
+    return false;
   };
 
   const fetchData = async () => {
@@ -291,6 +305,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
                     </div>
                 </div>
                 
+                {hasPermission('action_export_list') && (
                 <div className="relative">
                     <Button variant="secondary" size="sm" onClick={() => setIsExportMenuOpen(!isExportMenuOpen)} className="text-xs">
                         <Download className="h-3 w-3 mr-1.5" /> Export List
@@ -314,6 +329,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
                         </div>
                     )}
                 </div>
+                )}
             </div>
 
             {/* Glass Table Container */}

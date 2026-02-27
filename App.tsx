@@ -21,6 +21,8 @@ import { AnnouncementsPage } from './pages/AnnouncementsPage';
 import { AuditLogsPage } from './pages/AuditLogsPage';
 import { TasksPage } from './pages/TasksPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { CandidatesPage } from './pages/CandidatesPage';
 import { Layout } from './components/Layout';
 
 
@@ -137,7 +139,7 @@ const App: React.FC = () => {
       case 'suspended-inactive-voters': return <PlaceholderPage title="Suspended / Inactive Voters" />;
 
       // Candidates & Parties
-      case 'candidates': return <PlaceholderPage title="Candidates" />;
+      case 'candidates': return <CandidatesPage currentUser={user!} />;
       case 'party-distribution': return <RegistrarPartyPage currentUser={user!} />;
       case 'candidate-performance': return <PlaceholderPage title="Candidate Performance" />;
 
@@ -196,14 +198,21 @@ const App: React.FC = () => {
                  </div>
             </div>
         )}
-        <Layout 
-        user={user} 
-        activePage={currentPage} 
-        onNavigate={setCurrentPage} 
-        onLogout={handleLogout}
-        >
-        {renderContent()}
-        </Layout>
+        <Router>
+          <Layout 
+            user={user} 
+            activePage={currentPage} 
+            onNavigate={setCurrentPage} 
+            onLogout={handleLogout}
+          >
+            <div className="w-full h-full aspect-square">
+              <Routes>
+                <Route path="/candidates/*" element={<CandidatesPage currentUser={user} />} />
+                <Route path="/*" element={renderContent()} />
+              </Routes>
+            </div>
+          </Layout>
+        </Router>
     </>
   );
 };

@@ -2,13 +2,13 @@ import React, { useEffect, useState } from 'react';
 import { storageService } from '../services/storage';
 import { AuditLog, User } from '../types';
 import { RefreshCw, Search, Filter, Download } from 'lucide-react';
-import { motion } from 'framer-motion';
+
 
 interface AuditLogsPageProps {
   currentUser: User;
 }
 
-export const AuditLogsPage: React.FC<AuditLogsPageProps> = ({ currentUser }) => {
+export const AuditLogsPage: React.FC<AuditLogsPageProps> = () => {
   const [logs, setLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');

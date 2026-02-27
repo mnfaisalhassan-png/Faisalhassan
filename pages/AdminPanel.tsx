@@ -384,7 +384,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
     if (profilePictureFile) {
       try {
         profilePictureUrl = await storageService.uploadProfilePicture(editingUser?.id || 'new-user', profilePictureFile);
-      } catch (error) {
+      } catch {
         alert('Failed to upload profile picture. Please try again.');
         setIsSaving(false);
         return;

@@ -183,15 +183,18 @@ export interface Announcement {
 
 export interface Candidate {
   id: string;
-  candidateId: string;
-  profilePhotoUrl: string;
-  fullName: string;
+  created_at: string;
+  candidate_no: number;
+  id_card_number: string;
+  full_name: string;
+  gender: 'Male' | 'Female';
   address: string;
-  idCardNumber: string;
-  gender: 'Male' | 'Female' | 'Other';
-  partyName: string;
-  position: string;
-  contactNumber?: string;
-  status: 'Active' | 'Withdrawn' | 'Disqualified';
-  totalVotes: number;
+  island: { id: string; name: string };
+  contact_no: string;
+  represent_party: { id: string; name: string };
+  profile_picture_url?: string;
+  title: { id: string; name: string };
+  island_id?: string;
+  represent_party_id?: string;
+  title_id?: string;
 }

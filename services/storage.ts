@@ -1,12 +1,12 @@
 
 import { createClient } from '@supabase/supabase-js';
-import { STORAGE_KEYS, ISLANDS, DEFAULT_PARTIES } from '../constants';
-import { User, VoterRecord, ChatMessage, Task, AuditLog, AppNote, Announcement } from '../types';
+import { STORAGE_KEYS } from '../constants';
+import { User, VoterRecord, ChatMessage, Task, AuditLog, AppNote, Announcement, Candidate } from '../types';
 import { MOCK_ANNOUNCEMENTS } from './mock-data';
 
 // Supabase Configuration
-const SUPABASE_URL = 'https://hrvljfayyfmvoywiklgk.supabase.co';
-const SUPABASE_KEY = 'sb_publishable_pHHH2IhQUDUwVwmV7D4Ujw_Q6_O-dd6';
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL!;
+const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY!;
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -190,7 +190,7 @@ export const storageService = {
     }
 
     const stats: Record<string, { total: number; voted: number }> = {};
-    data.forEach((row: any) => {
+    data.forEach((row: { registrar_party: string; total_voters: number; voted_voters: number }) => {
       stats[row.registrar_party] = {
         total: row.total_voters,
         voted: row.voted_voters,
@@ -201,11 +201,13 @@ export const storageService = {
 
   // --- SETTINGS: ISLANDS & PARTIES (Supabase) ---
 
-  getIslands: async (): Promise<string[]> => {
-    const { data, error } = await supabase.from('islands').select('name').order('name');
-    if (error || !data) return ISLANDS;
-    if (data.length === 0) return ISLANDS;
-    return data.map((i: { name: string }) => i.name);
+  getIslands: async (): Promise<{ id: string; name: string }[]> => {
+    const { data, error } = await supabase.from('islands').select('id, name').order('name');
+    if (error) {
+      console.error('Error fetching islands:', error);
+      return [];
+    }
+    return data;
   },
 
   addIsland: async (name: string) => {
@@ -213,16 +215,18 @@ export const storageService = {
     if (error) throw error;
   },
 
-  deleteIsland: async (name: string) => {
-    const { error } = await supabase.from('islands').delete().eq('name', name);
+  deleteIsland: async (id: string) => {
+    const { error } = await supabase.from('islands').delete().eq('id', id);
     if (error) throw error;
   },
 
-  getParties: async (): Promise<string[]> => {
-    const { data, error } = await supabase.from('parties').select('name').order('name');
-    if (error || !data) return DEFAULT_PARTIES;
-    if (data.length === 0) return DEFAULT_PARTIES;
-    return data.map((p: { name: string }) => p.name);
+  getParties: async (): Promise<{ id: string; name: string }[]> => {
+    const { data, error } = await supabase.from('parties').select('id, name').order('name');
+    if (error) {
+      console.error('Error fetching parties:', error);
+      return [];
+    }
+    return data;
   },
 
   addParty: async (name: string) => {
@@ -230,8 +234,42 @@ export const storageService = {
     if (error) throw error;
   },
 
-  deleteParty: async (name: string) => {
-    const { error } = await supabase.from('parties').delete().eq('name', name);
+  deleteParty: async (id: string) => {
+    const { error } = await supabase.from('parties').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  updateIsland: async (id: string, newName: string) => {
+    const { error } = await supabase.from('islands').update({ name: newName }).eq('id', id);
+    if (error) throw error;
+  },
+
+  updateParty: async (id: string, newName: string) => {
+    const { error } = await supabase.from('parties').update({ name: newName }).eq('id', id);
+    if (error) throw error;
+  },
+
+  getTitles: async (): Promise<{ id: string; name: string }[]> => {
+    const { data, error } = await supabase.from('titles').select('id, name').order('name');
+    if (error) {
+      console.error('Error fetching titles:', error);
+      return [];
+    }
+    return data;
+  },
+
+  addTitle: async (name: string) => {
+    const { error } = await supabase.from('titles').insert([{ name }]);
+    if (error) throw error;
+  },
+
+  deleteTitle: async (id: string) => {
+    const { error } = await supabase.from('titles').delete().eq('id', id);
+    if (error) throw error;
+  },
+
+  updateTitle: async (id: string, newName: string) => {
+    const { error } = await supabase.from('titles').update({ name: newName }).eq('id', id);
     if (error) throw error;
   },
 
@@ -554,6 +592,134 @@ export const storageService = {
 
     const { data } = supabase.storage
       .from('profile-pictures')
+      .getPublicUrl(filePath);
+
+    return data.publicUrl;
+  },
+
+  // --- CANDIDATES (Supabase) ---
+
+  getCandidates: async (): Promise<Candidate[]> => {
+    const { data, error } = await supabase.from('candidates').select(`
+      *,
+      islands (id, name),
+      parties (id, name),
+      titles (id, name)
+    `);
+    if (error) {
+      console.error('Error fetching candidates:', error);
+      return [];
+    }
+    // Filter out any null or undefined entries in the data array
+    const validData = data.filter(Boolean);
+
+    const getRelation = (rel: { id: string; name: string } | { id: string; name: string }[] | null) => {
+      if (!rel) return { id: '', name: '' };
+      if (Array.isArray(rel)) {
+        return rel.length > 0 ? { id: rel[0].id, name: rel[0].name } : { id: '', name: '' };
+      }
+      return { id: rel.id, name: rel.name };
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return validData.map((c: Record<string, any>) => {
+      return {
+        id: c.id,
+        created_at: c.created_at,
+        candidate_no: c.candidate_no,
+        id_card_number: c.id_card_number,
+        full_name: c.full_name,
+        gender: c.gender,
+        address: c.address,
+        island: getRelation(c.islands),
+        contact_no: c.contact_no,
+        represent_party: getRelation(c.parties),
+        profile_picture_url: c.profile_picture_url,
+        title: getRelation(c.titles)
+      };
+    });
+  },
+
+  createCandidate: async (candidate: Partial<Candidate>) => {
+    const { error } = await supabase.from('candidates').insert([{
+      candidate_no: candidate.candidate_no,
+      id_card_number: candidate.id_card_number,
+      full_name: candidate.full_name,
+      gender: candidate.gender,
+      address: candidate.address,
+      island_id: candidate.island_id,
+      contact_no: candidate.contact_no,
+      represent_party_id: candidate.represent_party_id,
+      profile_picture_url: candidate.profile_picture_url,
+      title_id: candidate.title_id
+    }]);
+    if (error) throw error;
+  },
+
+  updateCandidate: async (id: string, candidate: Partial<Candidate>) => {
+    const { error } = await supabase.from('candidates').update({
+      candidate_no: candidate.candidate_no,
+      id_card_number: candidate.id_card_number,
+      full_name: candidate.full_name,
+      gender: candidate.gender,
+      address: candidate.address,
+      island_id: candidate.island_id,
+      contact_no: candidate.contact_no,
+      represent_party_id: candidate.represent_party_id,
+      profile_picture_url: candidate.profile_picture_url,
+      title_id: candidate.title_id
+    }).eq('id', id);
+    if (error) throw error;
+  },
+
+  deleteCandidate: async (candidate: Candidate) => {
+    // First, attempt to delete the profile picture from storage if it exists
+    if (candidate.profile_picture_url) {
+      try {
+        // Use a more robust method to extract the file path from the full public URL
+        const BUCKET_NAME = 'candidate-pictures';
+        const url = new URL(candidate.profile_picture_url);
+        const pathParts = url.pathname.split(`/${BUCKET_NAME}/`);
+        const filePath = pathParts[1];
+
+        if (filePath) {
+            const { error: deleteError } = await supabase.storage
+              .from(BUCKET_NAME)
+              .remove([filePath]);
+
+            if (deleteError) {
+              // Log the error but don't stop the process. The DB record is more important.
+              console.error(`Could not delete profile picture '${filePath}' from storage:`, deleteError.message);
+            }
+        }
+      } catch (storageError) {
+          console.error('An unexpected error occurred during profile picture deletion:', storageError);
+      }
+    }
+
+    // ALWAYS proceed to delete the candidate record from the database
+    const { error: dbError } = await supabase.from('candidates').delete().eq('id', candidate.id);
+    if (dbError) {
+        console.error('Error deleting candidate from database:', dbError);
+        throw dbError; // This is the critical error to throw
+    }
+  },
+
+  uploadCandidateProfilePicture: async (candidateId: string, file: File): Promise<string> => {
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${candidateId.replace(/[^a-z0-9]/gi, '-')}-${Date.now()}.${fileExt}`;
+    const filePath = `${fileName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('candidate-pictures')
+      .upload(filePath, file);
+
+    if (uploadError) {
+      throw uploadError;
+    }
+
+    const { data } = supabase.storage
+      .from('candidate-pictures')
       .getPublicUrl(filePath);
 
     return data.publicUrl;

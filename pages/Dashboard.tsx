@@ -30,8 +30,8 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterId, onClearInitialVoter }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
-  const [islands, setIslands] = useState<string[]>([]);
-  const [parties, setParties] = useState<string[]>([]);
+  const [islands, setIslands] = useState<{ id: string; name: string }[]>([]);
+  const [parties, setParties] = useState<{ id: string; name: string }[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   
   const [searchQuery, setSearchQuery] = useState('');
@@ -125,7 +125,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   
   // CAPABILITIES DEFINITION - Granular
   const canCreate = hasPermission('action_create_voter');
-  const canExport = hasPermission('action_export_data');
+  const canExport = hasPermission('action_export_list');
   const canDelete = isSuperAdmin || hasPermission('action_delete_voter');
   
   // View/Edit Permissions
@@ -168,8 +168,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         setParties(p);
         
         // Set defaults if lists are empty but we have data
-        if (i.length > 0 && !island) setIsland(i[0]);
-        if (p.length > 0 && !registrarParty) setRegistrarParty(p[0]);
+        if (i.length > 0 && !island) setIsland(i[0].name);
+        if (p.length > 0 && !registrarParty) setRegistrarParty(p[0].name);
         
     } catch (e) {
         console.error(e);
@@ -696,34 +696,59 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
       setTimeout(() => setNotification(null), 3000);
     };
 
-  const saveManagedItem = async () => {
-      alert("Renaming items is disabled in this version.");
+  const saveManagedItem = async (index: number) => {
+    if (!canEditLocation && manageTarget === 'island') return;
+    if (!canEditParty && manageTarget === 'party') return;
+
+    const originalItems = manageTarget === 'island' ? islands : parties;
+    const itemToUpdate = originalItems[index];
+
+    if (!editingItemValue.trim() || editingItemValue.trim() === itemToUpdate.name) {
       setEditingItemIndex(null);
+      return;
+    }
+
+    try {
+      if (manageTarget === 'island') {
+        await storageService.updateIsland(itemToUpdate.id, editingItemValue.trim());
+        await storageService.createAuditLog('update_island', `Renamed island from "${itemToUpdate.name}" to "${editingItemValue.trim()}"`, currentUser);
+      } else {
+        await storageService.updateParty(itemToUpdate.id, editingItemValue.trim());
+        await storageService.createAuditLog('update_party', `Renamed party from "${itemToUpdate.name}" to "${editingItemValue.trim()}"`, currentUser);
+      }
+      await refreshData();
+      setEditingItemIndex(null);
+      setNotification({ msg: 'Item updated!', type: 'success' });
+    } catch {
+      setNotification({ msg: 'Failed to update item.', type: 'error' });
+    }
+    setTimeout(() => setNotification(null), 3000);
   }
 
-  const deleteManagedItem = async (index: number) => {
+   const handleDeleteManagedItem = async (index: number) => {
     if (!canDelete) return;
     if(!window.confirm("Are you sure you want to delete this item?")) return;
     
     try {
         if (manageTarget === 'island') {
             const itemToDelete = islands[index];
-            await storageService.deleteIsland(itemToDelete);
-            await storageService.createAuditLog('delete_island', `Deleted island: ${itemToDelete}`, currentUser);
-            if (island === itemToDelete) setIsland(islands[0] || '');
+            await storageService.deleteIsland(itemToDelete.id);
+            await storageService.createAuditLog('delete_island', `Deleted island: ${itemToDelete.name}`, currentUser);
+            if (island === itemToDelete.name) setIsland(islands.length > 1 ? islands.find(i => i.id !== itemToDelete.id)?.name || '' : '');
         } else {
             const itemToDelete = parties[index];
-            await storageService.deleteParty(itemToDelete);
-            await storageService.createAuditLog('delete_party', `Deleted party: ${itemToDelete}`, currentUser);
-            if (registrarParty === itemToDelete) setRegistrarParty(parties[0] || '');
+            await storageService.deleteParty(itemToDelete.id);
+            await storageService.createAuditLog('delete_party', `Deleted party: ${itemToDelete.name}`, currentUser);
+            if (registrarParty === itemToDelete.name) setRegistrarParty(parties.length > 1 ? parties.find(p => p.id !== itemToDelete.id)?.name || '' : '');
         }
         await refreshData();
         setNotification({ msg: 'Item deleted from list', type: 'success' });
-    } catch {
+    } catch (error) {
+        console.error("Delete failed", error);
         setNotification({ msg: 'Failed to delete item', type: 'error' });
     }
     setTimeout(() => setNotification(null), 3000);
-  }
+  };
 
   // --- PROGRESS BAR CALCULATION FOR DIRECTORY VIEW ---
   const totalVoters = voters.length;
@@ -1255,7 +1280,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                     onChange={e => setIsland(e.target.value)}
                                                     disabled={isReadOnlyMode || !canEditLocation}
                                                 >
-                                                    {islands.map(isl => <option key={isl} value={isl}>{isl}</option>)}
+                                                    {islands.map(isl => <option key={isl.id} value={isl.name}>{isl.name}</option>)}
                                                 </select>
                                             </div>
                                             {isSuperAdmin && canEditLocation && !isReadOnlyMode && (
@@ -1300,7 +1325,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                 onChange={e => setRegistrarParty(e.target.value)}
                                                 disabled={isReadOnlyMode || !canEditParty}
                                             >
-                                                {parties.map(party => <option key={party} value={party}>{party}</option>)}
+                                                {parties.map(party => <option key={party.id} value={party.name}>{party.name}</option>)}
                                             </select>
                                             {isSuperAdmin && canEditParty && !isReadOnlyMode && (
                                                 <button onClick={() => { setManageTarget('party'); setEditingItemIndex(null); }} className="p-1.5 bg-gray-100 rounded-lg text-gray-600">
@@ -1604,7 +1629,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         >
             <div className="max-h-96 overflow-y-auto divide-y divide-gray-100 pr-1">
                 {(manageTarget === 'island' ? islands : parties).map((item, index) => (
-                    <div key={index} className="py-3 flex items-center justify-between group">
+                    <div key={item.id} className="py-3 flex items-center justify-between group">
                         {editingItemIndex === index ? (
                             <div className="flex-1 flex items-center space-x-2">
                                 <Input 
@@ -1618,21 +1643,20 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                             </div>
                         ) : (
                             <>
-                                <span className="text-sm text-gray-700 font-medium">{item}</span>
+                                <span className="text-sm text-gray-700 font-medium">{item.name}</span>
                                 <div className="flex space-x-1 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                                     <button 
                                         onClick={() => {
                                             setEditingItemIndex(index);
-                                            setEditingItemValue(item);
+                                            setEditingItemValue(item.name);
                                         }}
                                         className="p-1.5 text-blue-600 hover:bg-blue-50 rounded"
                                         title="Edit"
-                                        disabled
                                     >
                                         <Edit2 className="h-3 w-3" />
                                     </button>
                                     <button 
-                                        onClick={() => deleteManagedItem(index)}
+                                        onClick={() => handleDeleteManagedItem(index)}
                                         className="p-1.5 text-red-600 hover:bg-red-50 rounded"
                                         title="Delete"
                                     >

@@ -41,7 +41,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
 
   const handleSave = async (announcementData: Omit<Announcement, 'id' | 'author' | 'date'> & { id?: string }) => {
     try {
-      const { id, isPinned, isUrgent, ...rest } = announcementData;
+      const { isPinned, isUrgent, ...rest } = announcementData;
 
       const payload = {
         ...rest,
@@ -93,7 +93,7 @@ export const AnnouncementsPage: React.FC<AnnouncementsPageProps> = ({ currentUse
     setIsDeleteModalOpen(true);
   };
 
-  const isAdmin = currentUser.role === 'admin' || currentUser.role === 'superadmin';
+  
 
   const openViewModal = (announcement: Announcement) => {
     setViewingAnnouncement(announcement);
