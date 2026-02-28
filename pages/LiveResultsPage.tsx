@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { motion } from 'framer-motion';
 import { User, VoterRecord } from '../types';
 import { storageService } from '../services/storage';
 import { Target, Users, Search } from 'lucide-react';
@@ -82,7 +83,18 @@ export const LiveResultsPage: React.FC<LiveResultsPageProps> = () => {
       <div className="flex items-center gap-3 mb-6">
         <div className="bg-emerald-green/10 p-3 rounded-lg"><Target className="h-6 w-6 text-emerald-green" /></div>
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Live Election Results</h1>
+          <motion.h1 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="text-3xl font-bold text-gray-800 flex items-center gap-2"
+          >
+            Live Election Results
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+            </span>
+          </motion.h1>
           <p className="text-gray-500">Vote counts are updated automatically. Click on a bar to see details.</p>
         </div>
       </div>

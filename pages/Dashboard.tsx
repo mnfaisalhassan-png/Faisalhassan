@@ -5,9 +5,10 @@ import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
+import { MemberDetailsModal } from '../components/MemberDetailsModal';
 import { ConfirmationModal } from '../components/ui/ConfirmationModal';
 import { 
-  Search, Plus, Save, Trash2, Edit2, 
+  Search, Plus, Save, Trash2, Edit2, Eye,
   CheckCircle, MapPin, 
   User as UserIcon, AlertTriangle, 
   Info, X, ArrowLeft, ChevronRight,
@@ -103,6 +104,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
 
   // Database Column Error State
   const [showColumnError, setShowColumnError] = useState(false);
+
+  // Member Details Modal State
+  const [isMemberDetailsModalOpen, setIsMemberDetailsModalOpen] = useState(false);
+  const [memberDetailsVoterId, setMemberDetailsVoterId] = useState<string | null>(null);
+
+  const handleViewMemberDetails = (voterId: string) => {
+    setMemberDetailsVoterId(voterId);
+    setIsMemberDetailsModalOpen(true);
+  };
 
   // --- PERMISSIONS LOGIC ---
   // Super Admin: Role is 'superadmin' OR username is 'faisalhassan' (case insensitive)
@@ -1117,6 +1127,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                                             <div className="flex items-center justify-end gap-3">
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        handleViewMemberDetails(voter.id);
+                                                    }}
+                                                    className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                                                    title="View Details"
+                                                >
+                                                    <Eye className="h-5 w-5" />
+                                                </button>
                                                 {voter.phoneNumber && (
                                                     <button 
                                                         onClick={(e) => openWhatsApp(e, voter)}
@@ -1168,6 +1188,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
              </div>
           </div>
       )}
+
+      {/* Member Details Modal */}
+      <MemberDetailsModal
+        isOpen={isMemberDetailsModalOpen}
+        onClose={() => setIsMemberDetailsModalOpen(false)}
+        voterId={memberDetailsVoterId}
+      />
 
       {/* VIEW MODE: FORM (COMPACT, ANIMATED, GLASS) */}
       {viewMode === 'form' && (
@@ -1558,6 +1585,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             </div>
         </div>
       )}
+
+      {/* Member Details Modal */}
+      <MemberDetailsModal
+        isOpen={isMemberDetailsModalOpen}
+        onClose={() => setIsMemberDetailsModalOpen(false)}
+        voterId={memberDetailsVoterId}
+      />
 
       {/* Confirmation Modal */}
       <Modal 

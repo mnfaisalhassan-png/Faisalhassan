@@ -6,11 +6,13 @@ import {
   Users, CheckCircle, XCircle, CheckSquare, ShieldCheck,
   Search, ArrowLeft, MapPin, Flag,
   FileText, Download, FileSpreadsheet,
-  Star, HeartHandshake
+  Star, HeartHandshake, Eye
 } from 'lucide-react';
 
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
+import { MemberDetailsModal } from '../components/MemberDetailsModal';
+import { motion } from 'framer-motion';
 import { utils, writeFile } from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
@@ -105,6 +107,15 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
   const [isConfigModalOpen, setIsConfigModalOpen] = useState(false);
   const [newStartDate, setNewStartDate] = useState('');
   const [newEndDate, setNewEndDate] = useState('');
+
+  // Member Details Modal State
+  const [isMemberDetailsModalOpen, setIsMemberDetailsModalOpen] = useState(false);
+  const [memberDetailsVoterId, setMemberDetailsVoterId] = useState<string | null>(null);
+
+  const handleViewMemberDetails = (voterId: string) => {
+    setMemberDetailsVoterId(voterId);
+    setIsMemberDetailsModalOpen(true);
+  };
 
   // --- PERMISSIONS LOGIC ---
   const hasPermission = (perm: string) => {
@@ -381,6 +392,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Voter</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Location</th>
                                 <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                                <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100 bg-white/50">
@@ -408,12 +420,31 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
                                             {voter.hasVoted ? 'Voted' : 'Eligible'}
                                         </span>
                                     </td>
+                                    <td className="px-6 py-4 text-right">
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleViewMemberDetails(voter.id);
+                                            }}
+                                            className="text-gray-400 hover:text-blue-600 transition-colors p-1"
+                                            title="View Details"
+                                        >
+                                            <Eye className="h-5 w-5" />
+                                        </button>
+                                    </td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
                 </div>
             </div>
+
+            {/* Member Details Modal */}
+            <MemberDetailsModal
+                isOpen={isMemberDetailsModalOpen}
+                onClose={() => setIsMemberDetailsModalOpen(false)}
+                voterId={memberDetailsVoterId}
+            />
         </div>
       );
   }
@@ -423,7 +454,14 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
         <div>
-            <h1 className="text-xl font-bold text-gray-900 tracking-tight">N.Kudafari Council Election 2026</h1>
+            <motion.h1 
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                className="text-xl font-bold text-gray-900 tracking-tight"
+            >
+                N.Kudafari Council Election 2026
+            </motion.h1>
             <p className="text-gray-500 flex items-center mt-1">
                 <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 Live Status
@@ -624,6 +662,13 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
            </div>
         </Modal>
       )}
+
+      {/* Member Details Modal */}
+      <MemberDetailsModal
+        isOpen={isMemberDetailsModalOpen}
+        onClose={() => setIsMemberDetailsModalOpen(false)}
+        voterId={memberDetailsVoterId}
+      />
     </div>
   );
 };
