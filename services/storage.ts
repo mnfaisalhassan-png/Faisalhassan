@@ -155,7 +155,10 @@ export const storageService = {
       sheema: v.sheema,
       sadiq: v.shadda,
       rRoshi: v.r_roshi,
+      imran: v.imran,
       communicated: v.communicated,
+      shfaa: v.shfaa,
+      mashey: v.mashey,
       notes: v.notes,
       createdAt: new Date(v.created_at).getTime(),
       updatedAt: v.updated_at ? new Date(v.updated_at).getTime() : Date.now()
@@ -176,7 +179,10 @@ export const storageService = {
       sheema: voter.sheema,
       shadda: voter.sadiq,
       r_roshi: voter.rRoshi,
+      imran: voter.imran,
       communicated: voter.communicated,
+      shfaa: voter.shfaa,
+      mashey: voter.mashey,
       notes: voter.notes,
       created_at: new Date().toISOString()
     }]);
@@ -197,7 +203,10 @@ export const storageService = {
       sheema: voter.sheema,
       shadda: voter.sadiq,
       r_roshi: voter.rRoshi,
+      imran: voter.imran,
       communicated: voter.communicated,
+      shfaa: voter.shfaa,
+      mashey: voter.mashey,
       notes: voter.notes,
       updated_at: new Date().toISOString()
     }).eq('id', voter.id);
@@ -712,7 +721,8 @@ export const storageService = {
         contact_no: c.contact_no,
         represent_party: getRelation(c.parties),
         profile_picture_url: c.profile_picture_url,
-        title: getRelation(c.titles)
+        title: getRelation(c.titles),
+        total_votes: c.total_votes
       };
     });
   },
@@ -728,7 +738,8 @@ export const storageService = {
       contact_no: candidate.contact_no,
       represent_party_id: candidate.represent_party_id,
       profile_picture_url: candidate.profile_picture_url,
-      title_id: candidate.title_id
+      title_id: candidate.title_id,
+      total_votes: candidate.total_votes
     }]);
     if (error) throw error;
   },
@@ -744,7 +755,8 @@ export const storageService = {
       contact_no: candidate.contact_no,
       represent_party_id: candidate.represent_party_id,
       profile_picture_url: candidate.profile_picture_url,
-      title_id: candidate.title_id
+      title_id: candidate.title_id,
+      total_votes: candidate.total_votes
     }).eq('id', id);
     if (error) throw error;
   },

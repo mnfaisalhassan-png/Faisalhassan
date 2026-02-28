@@ -72,7 +72,8 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'view_metric_rf_seema', label: 'Show RF-Seema' },
         { id: 'view_metric_island_turnout', label: 'Show Voter Turnout by Island' },
         { id: 'view_metric_candidate_shafaa', label: 'Total Shafaa votes' },
-        { id: 'view_metric_candidate_mashey', label: 'Total Mashey votes' }
+        { id: 'view_metric_candidate_mashey', label: 'Total Mashey votes' },
+        { id: 'view_metric_voting_box_number', label: 'Show Voting Box Number' }
     ],
     FORM_ACCESS: [
         { id: 'edit_voter_identity', label: 'Edit Identity (ID, Name, Gender)' },
@@ -80,6 +81,7 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'edit_voter_contact', label: 'Edit Contact Info' },
         { id: 'edit_voter_party', label: 'Edit Registrar Party' },
         { id: 'edit_voter_status', label: 'Edit Voting Status' },
+        { id: 'edit_voting_box_number', label: 'Edit Voting Box Number' },
         // Granular Campaign Permissions
         { id: 'edit_voter_sheema', label: 'Edit Sheema Checkbox' },
         { id: 'edit_voter_shadda', label: 'Edit Shadda Checkbox' },

@@ -51,15 +51,22 @@ export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = ({ curr
 
       <div className="bg-white shadow-lg rounded-lg overflow-hidden">
         <div className="p-8">
-          <div className="flex items-center space-x-6 mb-8">
-            <img 
-              className="h-32 w-32 rounded-full object-cover border-4 border-gray-200"
-              src={candidate.profile_picture_url || 'https://via.placeholder.com/150'}
-              alt={`${candidate.full_name}'s profile picture`}
-            />
-            <div>
-              <h1 className="text-4xl font-bold text-gray-800">{candidate.full_name}</h1>
-              <p className="text-xl text-gray-600">{candidate.title?.name || 'N/A'}</p>
+          <div className="flex justify-between items-start mb-8">
+            <div className="flex items-center space-x-6">
+              <img 
+                className="h-32 w-32 rounded-full object-cover border-4 border-gray-200"
+                src={candidate.profile_picture_url || 'https://via.placeholder.com/150'}
+                alt={`${candidate.full_name}'s profile picture`}
+              />
+              <div>
+                <h1 className="text-4xl font-bold text-gray-800">{candidate.full_name}</h1>
+                <p className="text-xl text-gray-600">{candidate.title?.name || 'N/A'}</p>
+              </div>
+            </div>
+            
+            <div className="text-center p-4 bg-gray-50 rounded-xl border border-gray-100 min-w-[150px]">
+                <p className="text-sm font-bold text-gray-500 uppercase tracking-wider">Total Votes</p>
+                <p className="text-5xl font-bold text-indigo-600">{candidate.total_votes || 0}</p>
             </div>
           </div>
 

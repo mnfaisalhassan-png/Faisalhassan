@@ -165,8 +165,12 @@ export const ALL_PERMISSIONS = [
   'action_delete_announcement',
   'view_metric_candidate_shafaa',
   'view_metric_candidate_mashey',
+  'view_metric_candidate_imran',
+  'view_metric_voting_box_number',
   'edit_voter_shafaa',
   'edit_voter_mashey',
+  'edit_voter_imran',
+  'edit_voting_box_number',
   'action_create_candidate',
   'action_view_candidate',
   'action_edit_candidate',
@@ -202,4 +206,5 @@ export interface Candidate {
   island_id?: string;
   represent_party_id?: string;
   title_id?: string;
+  total_votes?: number;
 }

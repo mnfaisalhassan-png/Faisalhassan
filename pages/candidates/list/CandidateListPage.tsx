@@ -288,6 +288,7 @@ type FormDataType = Omit<Partial<Candidate>, 'island' | 'represent_party' | 'tit
   island: string | { id: string; name: string };
   represent_party: string | { id: string; name: string };
   title: string | { id: string; name: string };
+  total_votes?: number;
 };
 
 const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parties, titles, onSave, onClose, onManageList, canEdit = true }) => {
@@ -304,6 +305,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
     represent_party: candidate?.represent_party?.name ?? (parties.length > 0 ? parties[0].name : ''),
     profile_picture_url: candidate?.profile_picture_url ?? '',
     title: candidate?.title?.name ?? (titles.length > 0 ? titles[0].name : ''),
+    total_votes: candidate?.total_votes ?? 0,
   });
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(candidate?.profile_picture_url || null);
@@ -323,7 +325,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { candidate_no, island, represent_party, title, ...rest } = formData;
+    const { candidate_no, island, represent_party, title, total_votes, ...rest } = formData;
     void island; void represent_party; void title;
     const island_id = islands.find(i => i.name === formData.island)?.id;
     const represent_party_id = parties.find(p => p.name === formData.represent_party)?.id;
@@ -331,6 +333,7 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
     const candidateData: Partial<Candidate> = {
         ...rest,
         candidate_no: candidate_no ? parseInt(candidate_no, 10) : undefined,
+        total_votes: total_votes ? Number(total_votes) : 0,
         island_id,
         represent_party_id,
         title_id
@@ -365,6 +368,9 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                 <div className="p-4 bg-gray-50 rounded-xl border border-gray-100 space-y-3">
                     <FormField icon={Fingerprint} label="Candidate No">
                         <Input name="candidate_no" type="number" value={formData.candidate_no} onChange={handleChange} placeholder="#" className="bg-white" />
+                    </FormField>
+                    <FormField icon={Fingerprint} label="Total Votes">
+                        <Input name="total_votes" type="number" value={formData.total_votes} onChange={handleChange} placeholder="0" className="bg-white" />
                     </FormField>
                 </div>
             </div>

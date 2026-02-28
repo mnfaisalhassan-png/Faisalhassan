@@ -5,6 +5,7 @@ import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
+import { ConfirmationModal } from '../components/ui/ConfirmationModal';
 import { 
   Search, Plus, Save, Trash2, Edit2, 
   CheckCircle, MapPin, 
@@ -71,6 +72,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const [communicated, setCommunicated] = useState(false);
   const [shfaa, setShfaa] = useState(false);
   const [mashey, setMashey] = useState(false);
+  const [imran, setImran] = useState(false);
   const [notes, setNotes] = useState('');
   const [noteInput, setNoteInput] = useState(''); // New state for individual note input
 
@@ -145,6 +147,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const canEditParty = hasPermission('edit_voter_party');
   const canEditNotes = hasPermission('edit_voter_notes');
   const canEditVoted = hasPermission('edit_voter_status');
+  const canEditVotingBox = hasPermission('edit_voting_box_number');
   
   // Granular Campaign Permissions (with backward compatibility fallback)
   const canEditSheema = hasPermission('edit_voter_sheema') || hasPermission('edit_voter_campaign');
@@ -153,6 +156,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const canEditCommunicated = hasPermission('edit_voter_communicated') || hasPermission('edit_voter_campaign');
   const canEditShafaa = hasPermission('edit_voter_shafaa');
   const canEditMashey = hasPermission('edit_voter_mashey');
+  const canEditImran = hasPermission('edit_voter_imran');
 
   // Read Only Mode Logic:
   // If creating new -> Not read only (assuming you can create)
@@ -460,6 +464,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setCommunicated(false);
     setShfaa(false);
     setMashey(false);
+    setImran(false);
     setNotes('');
     setNoteInput('');
     setErrors({});
@@ -490,6 +495,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setCommunicated(voter.communicated || false);
     setShfaa(voter.shfaa || false);
     setMashey(voter.mashey || false);
+    setImran(voter.imran || false);
     setNotes(voter.notes || '');
     setErrors({});
     setViewMode('form'); // Switch to form view
@@ -572,6 +578,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             communicated,
             shfaa,
             mashey,
+            imran,
             notes, // Saves as comma separated string
             createdAt: Date.now(),
             updatedAt: Date.now()
@@ -709,7 +716,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     };
 
   const handleAddVotingBox = async () => {
-      if (!canEditVoted) return; // Assuming permission to edit voting status allows managing boxes
+      if (!canEditVotingBox) return; // Assuming permission to edit voting status allows managing boxes
       if (!newVotingBoxName.trim()) return;
       try {
         await storageService.addVotingBox(newVotingBoxName.trim());
@@ -728,7 +735,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const saveManagedItem = async (index: number) => {
     if (!canEditLocation && manageTarget === 'island') return;
     if (!canEditParty && manageTarget === 'party') return;
-    if (!canEditVoted && manageTarget === 'votingBox') return;
+    if (!canEditVotingBox && manageTarget === 'votingBox') return;
 
     const originalItems = manageTarget === 'island' ? islands : manageTarget === 'party' ? parties : votingBoxes;
     const itemToUpdate = originalItems[index];
@@ -1108,6 +1115,11 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                         Mashey
                                                     </span>
                                                 )}
+                                                {voter.imran && (
+                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 border border-blue-100">
+                                                        Imran
+                                                    </span>
+                                                )}
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">
                                                     {voter.registrarParty || 'Independent'}
                                                 </span>
@@ -1389,6 +1401,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                             { label: 'Comm.', state: communicated, setter: setCommunicated, color: 'orange', icon: MessageCircle, perm: canEditCommunicated },
                                             { label: 'Shafaa', state: shfaa, setter: setShfaa, color: 'teal', icon: Sparkles, perm: canEditShafaa },
                                             { label: 'Mashey', state: mashey, setter: setMashey, color: 'cyan', icon: Sparkles, perm: canEditMashey },
+                                            { label: 'Imran', state: imran, setter: setImran, color: 'blue', icon: Sparkles, perm: canEditImran },
                                         ].map((item) => (
                                             <button
                                                 key={item.label}
@@ -1451,15 +1464,15 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                             <label className="block text-[10px] font-medium text-gray-500 mb-1">Voting Box Number</label>
                                             <div className="flex gap-2">
                                                 <select 
-                                                    className={`block w-full h-8 text-xs border border-gray-300 rounded-lg bg-white/80 ${isReadOnlyMode || !canEditVoted ? 'opacity-60 cursor-not-allowed' : ''}`}
+                                                    className={`block w-full h-8 text-xs border border-gray-300 rounded-lg bg-white/80 ${isReadOnlyMode || !canEditVotingBox ? 'opacity-60 cursor-not-allowed' : ''}`}
                                                     value={votingBoxNumber}
                                                     onChange={e => setVotingBoxNumber(e.target.value)}
-                                                    disabled={isReadOnlyMode || !canEditVoted}
+                                                    disabled={isReadOnlyMode || !canEditVotingBox}
                                                 >
                                                     <option value="">Select Box...</option>
                                                     {votingBoxes.map(box => <option key={box.id} value={box.name}>{box.name}</option>)}
                                                 </select>
-                                                {canEditVoted && !isReadOnlyMode && (
+                                                {canEditVotingBox && !isReadOnlyMode && (
                                                     <div className="flex gap-1">
                                                         <button 
                                                             onClick={() => setIsAddVotingBoxModalOpen(true)}
@@ -1589,6 +1602,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                         <div><span className="text-gray-500">Communicated:</span> {communicated ? 'Yes' : 'No'}</div>
                         <div><span className="text-gray-500">Shafaa:</span> {shfaa ? 'Yes' : 'No'}</div>
                         <div><span className="text-gray-500">Mashey:</span> {mashey ? 'Yes' : 'No'}</div>
+                        <div><span className="text-gray-500">Imran:</span> {imran ? 'Yes' : 'No'}</div>
                         {notes && (
                             <div className="col-span-2 text-gray-500 italic mt-1 border-t pt-1">
                                 Notes: {notes.split(',').filter(Boolean).map(n => n.trim()).join(', ')}
@@ -1604,41 +1618,13 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
       </Modal>
       
       {/* Delete Confirmation Modal */}
-      <Modal 
-        isOpen={showDeleteConfirm} 
+      <ConfirmationModal
+        isOpen={showDeleteConfirm}
         onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={executeDelete}
         title="Confirm Deletion"
-        footer={
-            <>
-                <Button variant="secondary" onClick={() => setShowDeleteConfirm(false)}>Cancel</Button>
-                <Button variant="danger" onClick={executeDelete}>Delete Record</Button>
-            </>
-        }
-      >
-          <div className="flex items-start">
-             <div className="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                <Trash2 className="h-6 w-6 text-red-600" />
-             </div>
-             <div className="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Do you want to delete this record?
-                </h3>
-                <div className="mt-2">
-                  <p className="text-sm text-gray-500">
-                    This action cannot be undone. This will permanently remove the voter from the database.
-                  </p>
-                  <div className="mt-2 bg-yellow-50 border border-yellow-200 rounded-md p-2">
-                     <div className="flex">
-                        <ShieldCheck className="h-5 w-5 text-yellow-500 mr-2" />
-                        <span className="text-xs text-yellow-800 font-medium pt-0.5">
-                            Only Super Admin has the right to delete records.
-                        </span>
-                     </div>
-                  </div>
-                </div>
-             </div>
-          </div>
-      </Modal>
+        message="Are you sure you want to delete this record? This action cannot be undone."
+      />
 
       {/* Add Island Modal */}
       <Modal
