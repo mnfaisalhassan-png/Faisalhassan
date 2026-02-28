@@ -150,75 +150,174 @@ export const CandidateListPage: React.FC<CandidatesPageProps> = ({ currentUser }
           {Object.entries(
             filteredCandidates.reduce((acc, candidate) => {
               const partyName = candidate.represent_party?.name || 'Independent';
-              if (!acc[partyName]) acc[partyName] = [];
-              acc[partyName].push(candidate);
+              if (!acc[partyName]) acc[partyName] = { council: [], wdc: [] };
+              
+              const titleName = candidate.title?.name?.toLowerCase() || '';
+              if (titleName.includes('wdc')) {
+                acc[partyName].wdc.push(candidate);
+              } else {
+                acc[partyName].council.push(candidate);
+              }
               return acc;
-            }, {} as Record<string, Candidate[]>)
-          ).map(([partyName, partyCandidates]) => (
-            <div key={partyName} className="bg-white shadow rounded-lg overflow-hidden">
+            }, {} as Record<string, { council: Candidate[], wdc: Candidate[] }>)
+          ).map(([partyName, categories]) => {
+            const sortCandidates = (a: Candidate, b: Candidate) => {
+                const titleA = a.title?.name?.toLowerCase() || '';
+                const titleB = b.title?.name?.toLowerCase() || '';
+                
+                const isPresidentA = titleA.includes('president');
+                const isPresidentB = titleB.includes('president');
+                
+                if (isPresidentA && !isPresidentB) return -1;
+                if (!isPresidentA && isPresidentB) return 1;
+                return (a.candidate_no || 0) - (b.candidate_no || 0);
+            };
+
+            categories.council.sort(sortCandidates);
+            categories.wdc.sort(sortCandidates);
+
+            return (
+            <div key={partyName} className="bg-white shadow rounded-lg overflow-hidden mb-8">
               <div className="bg-gray-100 px-4 py-3 border-b border-gray-200">
                 <h2 className="text-lg font-semibold text-gray-800 flex items-center">
                   <Flag className="h-5 w-5 mr-2 text-indigo-600" />
                   {partyName}
                   <span className="ml-2 text-xs font-normal text-gray-500 bg-white px-2 py-0.5 rounded-full border border-gray-200">
-                    {partyCandidates.length} Candidates
+                    {categories.council.length + categories.wdc.length} Candidates
                   </span>
                 </h2>
               </div>
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">Photo</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Island</th>
-                    <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                    <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {partyCandidates.map((candidate) => (
-                    <tr key={String(candidate.id)} className="hover:bg-gray-50">
-                      <td className="px-4 py-2 whitespace-nowrap">
-                        <div className="h-8 w-8 rounded-full bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center">
-                            {candidate.profile_picture_url ? (
-                                <img src={candidate.profile_picture_url} alt="" className="h-full w-full object-cover" />
-                            ) : (
-                                <UserIcon className="h-4 w-4 text-gray-400" />
-                            )}
-                        </div>
-                      </td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.candidate_no}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{candidate.full_name}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.title?.name || ''}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.island?.name || ''}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.contact_no}</td>
-                      <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
-                        <div className="flex justify-end space-x-2">
-                            {hasPermission('action_view_candidate') && (
-                                <Link to={`/candidates/profile/${candidate.id}`} className="text-gray-400 hover:text-gray-600">
-                                    <Eye className="h-4 w-4" />
-                                </Link>
-                            )}
-                            {hasPermission('action_edit_candidate') && (
-                                <button onClick={() => handleEdit(candidate)} className="text-indigo-400 hover:text-indigo-600">
-                                    <Edit className="h-4 w-4" />
-                                </button>
-                            )}
-                            {hasPermission('action_delete_candidate') && (
-                                <button onClick={() => handleDelete(candidate)} className="text-red-400 hover:text-red-600">
-                                    <Trash2 className="h-4 w-4" />
-                                </button>
-                            )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              
+              {/* Council Candidates Section */}
+              {categories.council.length > 0 && (
+                <div className="border-b border-gray-100 last:border-b-0">
+                  <div className="bg-gray-50/50 px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center">
+                      <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
+                      Council Candidates
+                    </h3>
+                  </div>
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">Photo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Island</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {categories.council.map((candidate) => (
+                        <tr key={String(candidate.id)} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="h-8 w-8 rounded-full bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center">
+                                {candidate.profile_picture_url ? (
+                                    <img src={candidate.profile_picture_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                    <UserIcon className="h-4 w-4 text-gray-400" />
+                                )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.candidate_no}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{candidate.full_name}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.title?.name || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.island?.name || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.contact_no}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-2">
+                                {hasPermission('action_view_candidate') && (
+                                    <Link to={`/candidates/profile/${candidate.id}`} className="text-gray-400 hover:text-gray-600">
+                                        <Eye className="h-4 w-4" />
+                                    </Link>
+                                )}
+                                {hasPermission('action_edit_candidate') && (
+                                    <button onClick={() => handleEdit(candidate)} className="text-indigo-400 hover:text-indigo-600">
+                                        <Edit className="h-4 w-4" />
+                                    </button>
+                                )}
+                                {hasPermission('action_delete_candidate') && (
+                                    <button onClick={() => handleDelete(candidate)} className="text-red-400 hover:text-red-600">
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+
+              {/* WDC Candidates Section */}
+              {categories.wdc.length > 0 && (
+                <div className="border-t border-gray-200">
+                  <div className="bg-gray-50/50 px-4 py-2 border-b border-gray-100">
+                    <h3 className="text-sm font-bold text-gray-600 uppercase tracking-wider flex items-center">
+                      <Briefcase className="h-4 w-4 mr-2 text-gray-400" />
+                      WDC Candidates
+                    </h3>
+                  </div>
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">Photo</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Island</th>
+                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                        <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {categories.wdc.map((candidate) => (
+                        <tr key={String(candidate.id)} className="hover:bg-gray-50">
+                          <td className="px-4 py-2 whitespace-nowrap">
+                            <div className="h-8 w-8 rounded-full bg-gray-100 overflow-hidden border border-gray-200 flex items-center justify-center">
+                                {candidate.profile_picture_url ? (
+                                    <img src={candidate.profile_picture_url} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                    <UserIcon className="h-4 w-4 text-gray-400" />
+                                )}
+                            </div>
+                          </td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.candidate_no}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">{candidate.full_name}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.title?.name || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.island?.name || ''}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.contact_no}</td>
+                          <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex justify-end space-x-2">
+                                {hasPermission('action_view_candidate') && (
+                                    <Link to={`/candidates/profile/${candidate.id}`} className="text-gray-400 hover:text-gray-600">
+                                        <Eye className="h-4 w-4" />
+                                    </Link>
+                                )}
+                                {hasPermission('action_edit_candidate') && (
+                                    <button onClick={() => handleEdit(candidate)} className="text-indigo-400 hover:text-indigo-600">
+                                        <Edit className="h-4 w-4" />
+                                    </button>
+                                )}
+                                {hasPermission('action_delete_candidate') && (
+                                    <button onClick={() => handleDelete(candidate)} className="text-red-400 hover:text-red-600">
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          ))}
+          );
+          })}
           {filteredCandidates.length === 0 && (
              <div className="text-center py-10 bg-white rounded-lg shadow">
                 <p className="text-gray-500">No candidates found matching your search.</p>
