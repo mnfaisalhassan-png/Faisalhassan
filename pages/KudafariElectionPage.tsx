@@ -87,7 +87,7 @@ interface KudafariElectionPageProps {
 export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ currentUser, onVoterClick }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | null>(null);
   const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -198,7 +198,6 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
         if (activeFilter === 'shadda' && !v.sadiq) return false;
         if (activeFilter === 'rRois' && !v.rRoshi) return false;
         if (activeFilter === 'rfSeema' && (!v.rRoshi || !v.sheema)) return false; 
-        if (activeFilter === 'imran' && !v.imran) return false;
         if (activeFilter === 'male' && v.gender !== 'Male') return false;
         if (activeFilter === 'female' && v.gender !== 'Female') return false;
         if (activeFilter === 'voted' && !v.hasVoted) return false;
@@ -224,7 +223,6 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
         case 'shadda': return { title: 'Shadda Voters List', icon: <ShieldCheck className="mr-2 h-5 w-5 text-indigo-600"/> };
         case 'rRois': return { title: 'R-Rois Voters List', icon: <Star className="mr-2 h-5 w-5 text-orange-600"/> };
         case 'rfSeema': return { title: 'RF - Seema Voters List', icon: <HeartHandshake className="mr-2 h-5 w-5 text-pink-600"/> };
-        case 'imran': return { title: 'Imran Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-green-600"/> };
         case 'male': return { title: 'Male Voters List', icon: <Users className="mr-2 h-5 w-5 text-blue-600"/> };
         case 'female': return { title: 'Female Voters List', icon: <Users className="mr-2 h-5 w-5 text-pink-600"/> };
         case 'total': return { title: 'Total Voters List', icon: <Users className="mr-2 h-5 w-5 text-slate-600"/> };
@@ -234,7 +232,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
     }
   };
 
-  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female') => {
+  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female') => {
       setSelectedIsland(null);
       setSelectedParty(null);
       setActiveFilter(filter);

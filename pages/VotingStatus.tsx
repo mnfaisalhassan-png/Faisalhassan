@@ -92,7 +92,7 @@ interface ElectionOverviewProps {
 export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser, onVoterClick, refetchTrigger }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey' | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey' | null>(null);
   const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -202,7 +202,6 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
         if (activeFilter === 'shadda' && !v.sadiq) return false;
         if (activeFilter === 'rRois' && !v.rRoshi) return false;
         if (activeFilter === 'rfSeema' && (!v.rRoshi || !v.sheema)) return false; 
-        if (activeFilter === 'imran' && !v.imran) return false;
         if (activeFilter === 'shafaa' && !v.shfaa) return false;
         if (activeFilter === 'mashey' && !v.mashey) return false;
         if (activeFilter === 'male' && v.gender !== 'Male') return false;
@@ -230,7 +229,6 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
         case 'shadda': return { title: 'Shadda Voters List', icon: <ShieldCheck className="mr-2 h-5 w-5 text-indigo-600"/> };
         case 'rRois': return { title: 'R-Rois Voters List', icon: <Star className="mr-2 h-5 w-5 text-orange-600"/> };
         case 'rfSeema': return { title: 'RF - Seema Voters List', icon: <HeartHandshake className="mr-2 h-5 w-5 text-pink-600"/> };
-        case 'imran': return { title: 'Imran Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-green-600"/> };
         case 'shafaa': return { title: 'Shafaa Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-teal-600"/> };
         case 'mashey': return { title: 'Mashey Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-cyan-600"/> };
         case 'male': return { title: 'Male Voters List', icon: <Users className="mr-2 h-5 w-5 text-blue-600"/> };
@@ -242,7 +240,7 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
     }
   };
 
-  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'imran' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey') => {
+  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'shafaa' | 'mashey') => {
       setSelectedIsland(null);
       setSelectedParty(null);
       setActiveFilter(filter);
