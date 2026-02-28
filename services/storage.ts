@@ -676,9 +676,9 @@ export const storageService = {
   getCandidates: async (): Promise<Candidate[]> => {
     const { data, error } = await supabase.from('candidates').select(`
       *,
-      islands (id, name),
-      parties (id, name),
-      titles (id, name)
+      island:islands (id, name),
+      represent_party:parties (id, name),
+      title:titles (id, name)
     `);
     if (error) {
       console.error('Error fetching candidates:', error);
@@ -714,11 +714,11 @@ export const storageService = {
         full_name: c.full_name,
         gender: c.gender,
         address: c.address,
-        island: getRelation(c.islands),
+        island: getRelation(c.island),
         contact_no: c.contact_no,
-        represent_party: getRelation(c.parties),
+        represent_party: getRelation(c.represent_party),
         profile_picture_url: c.profile_picture_url,
-        title: getRelation(c.titles),
+        title: getRelation(c.title),
         total_votes: c.total_votes
       };
     });

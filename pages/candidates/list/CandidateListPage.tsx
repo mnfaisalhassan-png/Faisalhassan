@@ -285,9 +285,9 @@ const FormField = ({ icon: Icon, label, children, className }: { icon: React.Ele
 );
 
 type FormDataType = Omit<Partial<Candidate>, 'island' | 'represent_party' | 'title'> & {
-  island: string | { id: string; name: string };
-  represent_party: string | { id: string; name: string };
-  title: string | { id: string; name: string };
+  island_id: string;
+  represent_party_id: string;
+  title_id: string;
   total_votes?: number;
 };
 
@@ -300,11 +300,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
     full_name: candidate?.full_name ?? '',
     gender: candidate?.gender ?? 'Male',
     address: candidate?.address ?? '',
-    island: candidate?.island?.name ?? (islands.length > 0 ? islands[0].name : ''),
+    island_id: candidate?.island?.id || (islands.length > 0 ? islands[0].id : ''),
     contact_no: candidate?.contact_no ?? '',
-    represent_party: candidate?.represent_party?.name ?? (parties.length > 0 ? parties[0].name : ''),
+    represent_party_id: candidate?.represent_party?.id || (parties.length > 0 ? parties[0].id : ''),
     profile_picture_url: candidate?.profile_picture_url ?? '',
-    title: candidate?.title?.name ?? (titles.length > 0 ? titles[0].name : ''),
+    title_id: candidate?.title?.id || (titles.length > 0 ? titles[0].id : ''),
     total_votes: candidate?.total_votes ?? 0,
   });
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
@@ -325,11 +325,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const { candidate_no, island, represent_party, title, total_votes, ...rest } = formData;
-    void island; void represent_party; void title;
-    const island_id = islands.find(i => i.name === formData.island)?.id;
-    const represent_party_id = parties.find(p => p.name === formData.represent_party)?.id;
-    const title_id = titles.find(t => t.name === formData.title)?.id;
+    const { candidate_no, island_id, represent_party_id, title_id, total_votes, ...rest } = formData;
+    
     const candidateData: Partial<Candidate> = {
         ...rest,
         candidate_no: candidate_no ? parseInt(candidate_no, 10) : undefined,
@@ -388,9 +385,27 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                         <FormField icon={UserIcon} label="Full Name">
                             <Input name="full_name" value={formData.full_name} onChange={handleChange} required placeholder="Full Name" className="text-lg font-medium" />
                         </FormField>
-                        <FormField icon={MapPin} label="Address">
-                            <Input name="address" value={formData.address} onChange={handleChange} placeholder="Residential Address" />
-                        </FormField>
+                        <div className="grid grid-cols-12 gap-3">
+                            <div className="col-span-7">
+                                <FormField icon={MapPin} label="Address">
+                                    <Input name="address" value={formData.address} onChange={handleChange} placeholder="Residential Address" />
+                                </FormField>
+                            </div>
+                            <div className="col-span-5">
+                                <FormField icon={MapPin} label="Island">
+                                    <div className="flex gap-1">
+                                        <Select name="island_id" value={formData.island_id} onChange={handleChange} className="flex-grow">
+                                            {islands.map(island => <option key={island.id} value={island.id}>{island.name}</option>)}
+                                        </Select>
+                                        {canEdit && (
+                                            <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('island')} className="h-9 w-9">
+                                                <Edit className="h-3 w-3" />
+                                            </Button>
+                                        )}
+                                    </div>
+                                </FormField>
+                            </div>
+                        </div>
                         <div className="grid grid-cols-2 gap-3">
                             <FormField icon={UserIcon} label="Gender">
                                 <div className="flex items-center space-x-3 mt-1 bg-white p-2 rounded-md border border-gray-200">
@@ -418,8 +433,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                     <div className="grid grid-cols-1 gap-3">
                         <FormField icon={Flag} label="Represent Party">
                             <div className="flex gap-1">
-                                <Select name="represent_party" value={typeof formData.represent_party === 'object' ? formData.represent_party.name : formData.represent_party} onChange={handleChange} className="flex-grow">
-                                    {safeParties.map(party => <option key={party.id} value={party.name}>{party.name}</option>)}
+                                <Select name="represent_party_id" value={formData.represent_party_id} onChange={handleChange} className="flex-grow">
+                                    {safeParties.map(party => <option key={party.id} value={party.id}>{party.name}</option>)}
                                 </Select>
                                 {canEdit && (
                                     <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('party')} className="h-9 w-9">
@@ -430,8 +445,8 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                         </FormField>
                         <FormField icon={Briefcase} label="Title / Position">
                             <div className="flex gap-1">
-                                <Select name="title" value={typeof formData.title === 'object' ? formData.title.name : formData.title} onChange={handleChange} className="flex-grow font-medium">
-                                    {safeTitles.map(title => <option key={title.id} value={title.name}>{title.name}</option>)}
+                                <Select name="title_id" value={formData.title_id} onChange={handleChange} className="flex-grow font-medium">
+                                    {safeTitles.map(title => <option key={title.id} value={title.id}>{title.name}</option>)}
                                 </Select>
                                 {canEdit && (
                                     <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('title')} className="h-9 w-9">

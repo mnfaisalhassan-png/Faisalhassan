@@ -1,15 +1,17 @@
 import React from 'react';
 
 interface SelectProps extends React.SelectHTMLAttributes<HTMLSelectElement> {
-  label: string;
+  label?: string;
 }
 
 export const Select: React.FC<SelectProps> = ({ label, name, children, ...rest }) => {
   return (
     <div>
-      <label htmlFor={name} className="block text-sm font-medium text-gray-700">
-        {label}
-      </label>
+      {label && (
+        <label htmlFor={name} className="block text-sm font-medium text-gray-700">
+          {label}
+        </label>
+      )}
       <select
         id={name}
         name={name}
