@@ -166,7 +166,11 @@ export const ALL_PERMISSIONS = [
   'view_metric_candidate_shafaa',
   'view_metric_candidate_mashey',
   'edit_voter_shafaa',
-  'edit_voter_mashey'
+  'edit_voter_mashey',
+  'action_create_candidate',
+  'action_view_candidate',
+  'action_edit_candidate',
+  'action_delete_candidate'
 ] as const;
 
 export type Permission = typeof ALL_PERMISSIONS[number];

@@ -9,12 +9,21 @@ interface CandidateProfilePageProps {
   currentUser: User;
 }
 
-export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = () => {
+export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = ({ currentUser }) => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [candidate, setCandidate] = useState<Candidate | null>(null);
 
+  const hasPermission = React.useCallback((permission: string) => {
+    if (currentUser.role === 'superadmin') return true;
+    return currentUser.permissions?.includes(permission);
+  }, [currentUser]);
+
   useEffect(() => {
+    if (!hasPermission('action_view_candidate')) {
+      navigate('/candidates');
+      return;
+    }
     const fetchCandidate = async () => {
       if (id) {
         const candidates = await storageService.getCandidates();
@@ -23,7 +32,7 @@ export const CandidateProfilePage: React.FC<CandidateProfilePageProps> = () => {
       }
     };
     fetchCandidate();
-  }, [id]);
+  }, [id, hasPermission, navigate]);
 
   if (!candidate) {
     return <div>Loading...</div>;

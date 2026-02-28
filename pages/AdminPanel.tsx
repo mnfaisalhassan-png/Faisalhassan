@@ -7,9 +7,10 @@ import { Input } from '../components/ui/Input';
 import { 
     UserPlus, Shield, User as UserIcon, AlertTriangle, 
     Lock, Activity, Monitor, Clock, Zap, Users, Unlock, Ban, Eye, Save, Terminal,
-    CheckSquare, Square
+    CheckSquare, Square, ChevronDown, ChevronUp
 } from 'lucide-react';
 import { Modal } from '../components/ui/Modal';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface AdminPanelProps {
   currentUser: User;
@@ -154,6 +155,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
   const [userSearch, setUserSearch] = useState('');
   const [profilePictureFile, setProfilePictureFile] = useState<File | null>(null);
   const [profilePicturePreview, setProfilePicturePreview] = useState<string | null>(null);
+  const [expandedSections, setExpandedSections] = useState<string[]>(['Menu Visibility', 'Menu Access', 'Global Actions', 'Metrics', 'Form Access', 'Candidate Actions']);
 
   // Loading States
   const [isSaving, setIsSaving] = useState(false);
@@ -912,24 +914,76 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                     ].map((section, idx) => {
                         const filteredItems = section.items.filter(p => p.label.toLowerCase().includes(permissionSearch.toLowerCase()));
                         if (filteredItems.length === 0) return null;
+                        const isExpanded = expandedSections.includes(section.title);
                         
                         return (
                             <div key={idx} className="border-b border-gray-100 last:border-0">
-                                <div className="bg-gray-50/50 px-3 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 backdrop-blur-sm">
-                                    {section.title}
-                                </div>
-                                <div className="p-2 grid grid-cols-2 gap-1">
-                                    {filteredItems.map(perm => (
-                                        <div 
-                                            key={perm.id}
-                                            onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
-                                            className={`flex items-center px-2 py-1.5 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-50 text-gray-600'}`}
-                                        >
-                                            {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-3.5 w-3.5 mr-2 text-indigo-600 flex-shrink-0" /> : <Square className="h-3.5 w-3.5 mr-2 text-gray-300 flex-shrink-0" />}
-                                            <span className="text-[11px] font-medium leading-tight">{perm.label}</span>
+                                <div className="w-full bg-gray-50/50 px-3 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-wider sticky top-0 backdrop-blur-sm flex items-center justify-between group">
+                                    <button 
+                                        type="button"
+                                        onClick={() => {
+                                            if (isExpanded) {
+                                                setExpandedSections(expandedSections.filter(s => s !== section.title));
+                                            } else {
+                                                setExpandedSections([...expandedSections, section.title]);
+                                            }
+                                        }}
+                                        className="flex items-center hover:text-gray-600 transition-colors"
+                                    >
+                                        {isExpanded ? <ChevronUp className="h-3 w-3 mr-1.5" /> : <ChevronDown className="h-3 w-3 mr-1.5" />}
+                                        <span>{section.title}</span>
+                                    </button>
+                                    
+                                    {isExpanded && isSuperAdmin && !isSaving && (
+                                        <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const itemIds = section.items.map(i => i.id);
+                                                    setSelectedPermissions(prev => [...new Set([...prev, ...itemIds])]);
+                                                }}
+                                                className="text-indigo-600 hover:text-indigo-800 lowercase font-medium"
+                                            >
+                                                Select All
+                                            </button>
+                                            <span className="text-gray-300">|</span>
+                                            <button 
+                                                type="button"
+                                                onClick={() => {
+                                                    const itemIds = section.items.map(i => i.id);
+                                                    setSelectedPermissions(prev => prev.filter(p => !itemIds.includes(p)));
+                                                }}
+                                                className="text-red-600 hover:text-red-800 lowercase font-medium"
+                                            >
+                                                None
+                                            </button>
                                         </div>
-                                    ))}
+                                    )}
                                 </div>
+                                <AnimatePresence initial={false}>
+                                    {isExpanded && (
+                                        <motion.div 
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: 'auto', opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.2, ease: 'easeInOut' }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="p-2 grid grid-cols-2 gap-1">
+                                                {filteredItems.map(perm => (
+                                                    <div 
+                                                        key={perm.id}
+                                                        onClick={() => isSuperAdmin && !isSaving && togglePermission(perm.id)}
+                                                        className={`flex items-center px-2 py-1.5 rounded cursor-pointer transition-colors ${selectedPermissions.includes(perm.id) ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-gray-50 text-gray-600'}`}
+                                                    >
+                                                        {selectedPermissions.includes(perm.id) ? <CheckSquare className="h-3.5 w-3.5 mr-2 text-indigo-600 flex-shrink-0" /> : <Square className="h-3.5 w-3.5 mr-2 text-gray-300 flex-shrink-0" />}
+                                                        <span className="text-[11px] font-medium leading-tight">{perm.label}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         );
                     })}

@@ -18,17 +18,22 @@ interface CandidatesPageProps {
   currentUser: User;
 }
 
-export const CandidateListPage: React.FC<CandidatesPageProps> = () => {
+export const CandidateListPage: React.FC<CandidatesPageProps> = ({ currentUser }) => {
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCandidate, setEditingCandidate] = useState<Candidate | null>(null);
-    const [islands, setIslands] = useState<{ id: string; name: string }[]>([]);
+  const [islands, setIslands] = useState<{ id: string; name: string }[]>([]);
   const [parties, setParties] = useState<{ id: string; name: string }[]>([]);
   const [titles, setTitles] = useState<{ id: string; name: string }[]>([]);
   const [manageListTarget, setManageListTarget] = useState<'island' | 'party' | 'title' | null>(null);
   const [candidateToDelete, setCandidateToDelete] = useState<Candidate | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+
+  const hasPermission = React.useCallback((permission: string) => {
+    if (currentUser.role === 'superadmin') return true;
+    return currentUser.permissions?.includes(permission);
+  }, [currentUser]);
 
   useEffect(() => {
     fetchCandidates();
@@ -93,6 +98,10 @@ export const CandidateListPage: React.FC<CandidatesPageProps> = () => {
   };
 
   const handleSave = async (candidateData: Partial<Candidate>, profilePictureFile: File | null) => {
+    if (!hasPermission('action_edit_candidate') && !hasPermission('action_create_candidate')) {
+      alert('You do not have permission to save candidates.');
+      return;
+    }
     try {
       let profilePictureUrl = editingCandidate?.profile_picture_url || '';
 
@@ -127,9 +136,11 @@ export const CandidateListPage: React.FC<CandidatesPageProps> = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
-        <Button onClick={handleCreateNew}>
-          <PlusCircle className="mr-2 h-4 w-4" /> Create New Candidate
-        </Button>
+        {hasPermission('action_create_candidate') && (
+          <Button onClick={handleCreateNew}>
+            <PlusCircle className="mr-2 h-4 w-4" /> Create New Candidate
+          </Button>
+        )}
       </div>
 
       {isLoading ? (
@@ -185,9 +196,21 @@ export const CandidateListPage: React.FC<CandidatesPageProps> = () => {
                       <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-500">{candidate.contact_no}</td>
                       <td className="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
-                            <Link to={`/candidates/profile/${candidate.id}`} className="text-gray-400 hover:text-gray-600"><Eye className="h-4 w-4" /></Link>
-                            <button onClick={() => handleEdit(candidate)} className="text-indigo-400 hover:text-indigo-600"><Edit className="h-4 w-4" /></button>
-                            <button onClick={() => handleDelete(candidate)} className="text-red-400 hover:text-red-600"><Trash2 className="h-4 w-4" /></button>
+                            {hasPermission('action_view_candidate') && (
+                                <Link to={`/candidates/profile/${candidate.id}`} className="text-gray-400 hover:text-gray-600">
+                                    <Eye className="h-4 w-4" />
+                                </Link>
+                            )}
+                            {hasPermission('action_edit_candidate') && (
+                                <button onClick={() => handleEdit(candidate)} className="text-indigo-400 hover:text-indigo-600">
+                                    <Edit className="h-4 w-4" />
+                                </button>
+                            )}
+                            {hasPermission('action_delete_candidate') && (
+                                <button onClick={() => handleDelete(candidate)} className="text-red-400 hover:text-red-600">
+                                    <Trash2 className="h-4 w-4" />
+                                </button>
+                            )}
                         </div>
                       </td>
                     </tr>
@@ -213,6 +236,7 @@ export const CandidateListPage: React.FC<CandidatesPageProps> = () => {
           onSave={handleSave}
           onClose={() => setIsModalOpen(false)}
           onManageList={setManageListTarget}
+          canEdit={hasPermission('action_edit_candidate')}
         />
       )}
 
@@ -250,6 +274,7 @@ interface CandidateFormProps {
   onSave: (candidateData: Partial<Candidate>, profilePictureFile: File | null) => void;
   onClose: () => void;
   onManageList: (target: 'island' | 'party' | 'title') => void;
+  canEdit?: boolean;
 }
 
 const FormField = ({ icon: Icon, label, children, className }: { icon: React.ElementType, label: string, children: React.ReactNode, className?: string }) => (
@@ -265,7 +290,7 @@ type FormDataType = Omit<Partial<Candidate>, 'island' | 'represent_party' | 'tit
   title: string | { id: string; name: string };
 };
 
-const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parties, titles, onSave, onClose, onManageList }) => {
+const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parties, titles, onSave, onClose, onManageList, canEdit = true }) => {
   const safeParties = filterAndEnsureValidKeys(parties);
   const safeTitles = filterAndEnsureValidKeys(titles);
   const [formData, setFormData] = useState<FormDataType>({
@@ -390,9 +415,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                                 <Select name="represent_party" value={typeof formData.represent_party === 'object' ? formData.represent_party.name : formData.represent_party} onChange={handleChange} className="flex-grow">
                                     {safeParties.map(party => <option key={party.id} value={party.name}>{party.name}</option>)}
                                 </Select>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('party')} className="h-9 w-9">
-                                    <Edit className="h-3 w-3" />
-                                </Button>
+                                {canEdit && (
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('party')} className="h-9 w-9">
+                                        <Edit className="h-3 w-3" />
+                                    </Button>
+                                )}
                             </div>
                         </FormField>
                         <FormField icon={Briefcase} label="Title / Position">
@@ -400,9 +427,11 @@ const CandidateForm: React.FC<CandidateFormProps> = ({ candidate, islands, parti
                                 <Select name="title" value={typeof formData.title === 'object' ? formData.title.name : formData.title} onChange={handleChange} className="flex-grow font-medium">
                                     {safeTitles.map(title => <option key={title.id} value={title.name}>{title.name}</option>)}
                                 </Select>
-                                <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('title')} className="h-9 w-9">
-                                    <Edit className="h-3 w-3" />
-                                </Button>
+                                {canEdit && (
+                                    <Button type="button" variant="ghost" size="icon" onClick={() => onManageList('title')} className="h-9 w-9">
+                                        <Edit className="h-3 w-3" />
+                                    </Button>
+                                )}
                             </div>
                         </FormField>
                     </div>
