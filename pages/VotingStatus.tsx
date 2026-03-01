@@ -510,211 +510,273 @@ export const ElectionOverview: React.FC<ElectionOverviewProps> = ({ currentUser,
 
 
       {/* Main Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
-          {hasPermission('view_metric_total_registered') && (
-              <StatCard 
-                title="Total Voters" 
-                value={totalVoters} 
-                icon={Users} 
-                color="purple" 
-                onClick={() => handleFilterClick('total')}
-              />
-          )}
-          {hasPermission('view_metric_votes_cast') && (
-              <StatCard 
-                title="Votes Cast" 
-                value={votedCount} 
-                subValue={`${percentage}%`} 
-                icon={CheckCircle} 
-                color="green" 
-                onClick={() => handleFilterClick('voted')}
-              />
-          )}
-          {hasPermission('view_metric_pending_votes') && (
-              <StatCard 
-                title="Pending Votes" 
-                value={pendingCount} 
-                icon={XCircle} 
-                color="red" 
-                onClick={() => handleFilterClick('pending')}
-              />
-          )}
-          
-          {hasPermission('view_metric_candidate_sheema') && (
-              <StatCard 
-                title="Seema Selections" 
-                value={seemaStats.total} 
-                subValue={`${seemaOverallPct}%`}
-                icon={CheckSquare} 
-                color="rose" 
-                onClick={() => handleFilterClick('seema')}
-              />
-          )}
+      <div className="space-y-8">
+          {/* General Stats */}
+          <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+              {hasPermission('view_metric_total_registered') && (
+                  <StatCard 
+                    title="Total Voters" 
+                    value={totalVoters} 
+                    icon={Users} 
+                    color="purple" 
+                    onClick={() => handleFilterClick('total')}
+                  />
+              )}
+              {hasPermission('view_metric_votes_cast') && (
+                  <StatCard 
+                    title="Votes Cast" 
+                    value={votedCount} 
+                    subValue={`${percentage}%`} 
+                    icon={CheckCircle} 
+                    color="green" 
+                    onClick={() => handleFilterClick('voted')}
+                  />
+              )}
+              {hasPermission('view_metric_pending_votes') && (
+                  <StatCard 
+                    title="Pending Votes" 
+                    value={pendingCount} 
+                    icon={XCircle} 
+                    color="red" 
+                    onClick={() => handleFilterClick('pending')}
+                  />
+              )}
+          </div>
 
-          {hasPermission('view_metric_total_male_voters') && (
-              <StatCard 
-                title="Male Voters for Seema" 
-                value={maleVotersForSeema} 
-                subValue={`${maleVotersForSeemaOverallPct}%`}
-                icon={Users} 
-                color="blue" 
-                onClick={() => handleFilterClick('male')}
-              />
-          )}
+          {/* People's National Congress */}
+          <div>
+              <h2 className="text-lg font-bold text-primary-800 mb-4 border-b border-primary-100 pb-2">People's National Congress</h2>
+              
+              <div className="space-y-6">
+                  {/* Council Member */}
+                  <div>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wider flex items-center">
+                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
+                          Council Member
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {hasPermission('view_metric_candidate_shafaa') && (
+                              <StatCard 
+                                title="Shafaa Selection (Council Member)" 
+                                value={shafaaStats.total} 
+                                subValue={`${shafaaOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="blue" 
+                                onClick={() => handleFilterClick('shafaa')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_zuheyru') && (
+                              <StatCard 
+                                title="Zuheyru Selection (Council Member)" 
+                                value={zuheyruStats.total} 
+                                subValue={`${zuheyruOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="blue" 
+                                onClick={() => handleFilterClick('zuheyru')}
+                              />
+                          )}
+                      </div>
+                  </div>
 
-          {hasPermission('view_metric_total_female_voters') && (
-              <StatCard 
-                title="Female Voters for Seema" 
-                value={femaleVotersForSeema} 
-                subValue={`${femaleVotersForSeemaOverallPct}%`}
-                icon={Users} 
-                color="pink" 
-                onClick={() => handleFilterClick('female')}
-              />
-          )}
+                  {/* WDC Members */}
+                  <div>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wider flex items-center">
+                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
+                          WDC Members
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {/* WDC President (Seema) */}
+                          {hasPermission('view_metric_candidate_sheema') && (
+                              <StatCard 
+                                title="Seema Selections (WDC President)" 
+                                value={seemaStats.total} 
+                                subValue={`${seemaOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="rose" 
+                                onClick={() => handleFilterClick('seema')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_sadiq') && (
+                              <StatCard 
+                                title="Shadda Selection (WDC Member)" 
+                                value={shaddaStats.total} 
+                                subValue={`${shaddaOverallPct}%`}
+                                icon={ShieldCheck} 
+                                color="indigo" 
+                                onClick={() => handleFilterClick('shadda')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_mashey') && (
+                              <StatCard 
+                                title="Mashey Selection (WDC Member)" 
+                                value={masheyStats.total} 
+                                subValue={`${masheyOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="green" 
+                                onClick={() => handleFilterClick('mashey')}
+                              />
+                          )}
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-          {hasPermission('view_metric_candidate_sadiq') && (
-              <StatCard 
-                title="Shadda Selections" 
-                value={shaddaStats.total} 
-                subValue={`${shaddaOverallPct}%`}
-                icon={ShieldCheck} 
-                color="indigo" 
-                onClick={() => handleFilterClick('shadda')}
-              />
-          )}
+          {/* Maldives Development Alliance */}
+          <div>
+              <h2 className="text-lg font-bold text-primary-800 mb-4 border-b border-primary-100 pb-2">Maldives Development Alliance</h2>
+              
+              <div className="space-y-6">
+                  {/* Council Members */}
+                  <div>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wider flex items-center">
+                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
+                          Council Members
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {hasPermission('view_metric_candidate_mahfooz') && (
+                              <StatCard 
+                                title="Mahfooz (Council President)" 
+                                value={mahfoozStats.total} 
+                                subValue={`${mahfoozOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="green" 
+                                onClick={() => handleFilterClick('mahfooz')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_jabir') && (
+                              <StatCard 
+                                title="Jabir Selection (Council Member)" 
+                                value={jabirStats.total} 
+                                subValue={`${jabirOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="purple" 
+                                onClick={() => handleFilterClick('jabir')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_faiga') && (
+                              <StatCard 
+                                title="Faiga Selection (Council Member)" 
+                                value={faigaStats.total} 
+                                subValue={`${faigaOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="pink" 
+                                onClick={() => handleFilterClick('faiga')}
+                              />
+                          )}
+                      </div>
+                  </div>
 
-          {hasPermission('view_metric_r_roshi') && (
-              <StatCard 
-                title="R-Rois Selections" 
-                value={rRoisStats.total} 
-                subValue={`${rRoisOverallPct}%`}
-                icon={Star} 
-                color="orange" 
-                onClick={() => handleFilterClick('rRois')}
-              />
-          )}
+                  {/* WDC Members */}
+                  <div>
+                      <h3 className="text-sm font-semibold text-gray-600 mb-3 uppercase tracking-wider flex items-center">
+                          <span className="w-1.5 h-1.5 bg-gray-400 rounded-full mr-2"></span>
+                          WDC Members
+                      </h3>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {hasPermission('view_metric_candidate_mihana') && (
+                              <StatCard 
+                                title="Mihana Selection (WDC President)" 
+                                value={mihanaStats.total} 
+                                subValue={`${mihanaOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="orange" 
+                                onClick={() => handleFilterClick('mihana')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_zahura') && (
+                              <StatCard 
+                                title="Zahura Selection (WDC Member)" 
+                                value={zahuraStats.total} 
+                                subValue={`${zahuraOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="rose" 
+                                onClick={() => handleFilterClick('zahura')}
+                              />
+                          )}
+                          {hasPermission('view_metric_candidate_zulaikha') && (
+                              <StatCard 
+                                title="Zulaikha Selection (WDC Member)" 
+                                value={zulaikhaStats.total} 
+                                subValue={`${zulaikhaOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="indigo" 
+                                onClick={() => handleFilterClick('zulaikha')}
+                              />
+                          )}
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-          {hasPermission('view_metric_rf_seema') && (
-              <StatCard 
-                title="RF-Seema Selections" 
-                value={rfSeemaStats.total} 
-                subValue={`${rfSeemaOverallPct}%`}
-                icon={HeartHandshake} 
-                color="pink" 
-                onClick={() => handleFilterClick('rfSeema')}
-              />
-          )}
+          {/* Independent */}
+          <div>
+              <h2 className="text-lg font-bold text-primary-800 mb-4 border-b border-primary-100 pb-2">Independent</h2>
+              
+              <div className="space-y-6">
+                  {/* Council President */}
+                  <div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {hasPermission('view_metric_candidate_sodhiq') && (
+                              <StatCard 
+                                title="Sodhiq (Council President)" 
+                                value={sodhiqStats.total} 
+                                subValue={`${sodhiqOverallPct}%`}
+                                icon={CheckSquare} 
+                                color="teal" 
+                                onClick={() => handleFilterClick('sodhiq')}
+                              />
+                          )}
+                      </div>
+                  </div>
+              </div>
+          </div>
 
-          {hasPermission('view_metric_candidate_shafaa') && (
-              <StatCard 
-                title="Shafaa Selections" 
-                value={shafaaStats.total} 
-                subValue={`${shafaaOverallPct}%`}
-                icon={CheckSquare} 
-                color="blue" 
-                onClick={() => handleFilterClick('shafaa')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_mashey') && (
-              <StatCard 
-                title="Mashey Selections" 
-                value={masheyStats.total} 
-                subValue={`${masheyOverallPct}%`}
-                icon={CheckSquare} 
-                color="green" 
-                onClick={() => handleFilterClick('mashey')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_zuheyru') && (
-              <StatCard 
-                title="Zuheyru Selections" 
-                value={zuheyruStats.total} 
-                subValue={`${zuheyruOverallPct}%`}
-                icon={CheckSquare} 
-                color="blue" 
-                onClick={() => handleFilterClick('zuheyru')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_mahfooz') && (
-              <StatCard 
-                title="Mahfooz Selections" 
-                value={mahfoozStats.total} 
-                subValue={`${mahfoozOverallPct}%`}
-                icon={CheckSquare} 
-                color="green" 
-                onClick={() => handleFilterClick('mahfooz')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_faiga') && (
-              <StatCard 
-                title="Faiga Selections" 
-                value={faigaStats.total} 
-                subValue={`${faigaOverallPct}%`}
-                icon={CheckSquare} 
-                color="pink" 
-                onClick={() => handleFilterClick('faiga')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_jabir') && (
-              <StatCard 
-                title="Jabir Selections" 
-                value={jabirStats.total} 
-                subValue={`${jabirOverallPct}%`}
-                icon={CheckSquare} 
-                color="purple" 
-                onClick={() => handleFilterClick('jabir')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_mihana') && (
-              <StatCard 
-                title="Mihana Selections" 
-                value={mihanaStats.total} 
-                subValue={`${mihanaOverallPct}%`}
-                icon={CheckSquare} 
-                color="orange" 
-                onClick={() => handleFilterClick('mihana')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_zahura') && (
-              <StatCard 
-                title="Zahura Selections" 
-                value={zahuraStats.total} 
-                subValue={`${zahuraOverallPct}%`}
-                icon={CheckSquare} 
-                color="rose" 
-                onClick={() => handleFilterClick('zahura')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_zulaikha') && (
-              <StatCard 
-                title="Zulaikha Selections" 
-                value={zulaikhaStats.total} 
-                subValue={`${zulaikhaOverallPct}%`}
-                icon={CheckSquare} 
-                color="indigo" 
-                onClick={() => handleFilterClick('zulaikha')}
-              />
-          )}
-
-          {hasPermission('view_metric_candidate_sodhiq') && (
-              <StatCard 
-                title="Sodhiq Selections" 
-                value={sodhiqStats.total} 
-                subValue={`${sodhiqOverallPct}%`}
-                icon={CheckSquare} 
-                color="teal" 
-                onClick={() => handleFilterClick('sodhiq')}
-              />
-          )}
+          {/* Additional Insights */}
+          <div>
+              <h2 className="text-lg font-bold text-gray-700 mb-4 border-b border-gray-200 pb-2">Additional Insights</h2>
+              <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {hasPermission('view_metric_r_roshi') && (
+                      <StatCard 
+                        title="R-Rois Selections" 
+                        value={rRoisStats.total} 
+                        subValue={`${rRoisOverallPct}%`}
+                        icon={Star} 
+                        color="orange" 
+                        onClick={() => handleFilterClick('rRois')}
+                      />
+                  )}
+                  {hasPermission('view_metric_rf_seema') && (
+                      <StatCard 
+                        title="RF-Seema Selections" 
+                        value={rfSeemaStats.total} 
+                        subValue={`${rfSeemaOverallPct}%`}
+                        icon={HeartHandshake} 
+                        color="pink" 
+                        onClick={() => handleFilterClick('rfSeema')}
+                      />
+                  )}
+                  {hasPermission('view_metric_total_male_voters') && (
+                      <StatCard 
+                        title="Male Voters for Seema" 
+                        value={maleVotersForSeema} 
+                        subValue={`${maleVotersForSeemaOverallPct}%`}
+                        icon={Users} 
+                        color="blue" 
+                        onClick={() => handleFilterClick('male')}
+                      />
+                  )}
+                  {hasPermission('view_metric_total_female_voters') && (
+                      <StatCard 
+                        title="Female Voters for Seema" 
+                        value={femaleVotersForSeema} 
+                        subValue={`${femaleVotersForSeemaOverallPct}%`}
+                        icon={Users} 
+                        color="pink" 
+                        onClick={() => handleFilterClick('female')}
+                      />
+                  )}
+              </div>
+          </div>
       </div>
 
       {/* Secondary Stats Row */}
