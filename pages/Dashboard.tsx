@@ -591,8 +591,51 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     return Object.keys(newErrors).length === 0;
   };
 
+  // Helper to get permission ID for a candidate
+  const getCandidatePermission = (candidateId: string) => {
+      const map: Record<string, string> = {
+          'sheema': 'edit_voter_sheema',
+          'sadiq': 'edit_voter_shadda',
+          'rRoshi': 'edit_voter_rroshi',
+          'shfaa': 'edit_voter_shafaa',
+          'mashey': 'edit_voter_mashey',
+          'zuheyru': 'edit_voter_zuheyru',
+          'mahfooz': 'edit_voter_mahfooz',
+          'faiga': 'edit_voter_faiga',
+          'jabir': 'edit_voter_jabir',
+          'mihana': 'edit_voter_mihana',
+          'zahura': 'edit_voter_zahura',
+          'zulaikha': 'edit_voter_zulaikha',
+          'sodhiq': 'edit_voter_sodhiq'
+      };
+      return map[candidateId] || '';
+  };
+
+  // Helper to get view permission ID for a candidate
+  const getCandidateViewPermission = (candidateId: string) => {
+      const map: Record<string, string> = {
+          'zuheyru': 'view_form_candidate_zuheyru',
+          'mahfooz': 'view_form_candidate_mahfooz',
+          'faiga': 'view_form_candidate_faiga',
+          'jabir': 'view_form_candidate_jabir',
+          'mihana': 'view_form_candidate_mihana',
+          'zahura': 'view_form_candidate_zahura',
+          'zulaikha': 'view_form_candidate_zulaikha',
+          'sodhiq': 'view_form_candidate_sodhiq'
+      };
+      return map[candidateId] || '';
+  };
+
   const toggleCandidate = (candidateId: string) => {
     if (isReadOnlyMode) return;
+    
+    // Check granular permission
+    const permId = getCandidatePermission(candidateId);
+    if (permId && !hasPermission(permId)) {
+        setNotification({ msg: 'Access Denied: You do not have permission to edit this candidate.', type: 'error' });
+        setTimeout(() => setNotification(null), 3000);
+        return;
+    }
     
     setCandidateSupport(prev => {
       const exists = prev.find(c => c.candidateId === candidateId);
@@ -607,6 +650,9 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const updateCandidateComment = (candidateId: string, comment: string) => {
     if (isReadOnlyMode) return;
     
+    const permId = getCandidatePermission(candidateId);
+    if (permId && !hasPermission(permId)) return;
+
     setCandidateSupport(prev => prev.map(c => 
       c.candidateId === candidateId ? { ...c, comment } : c
     ));
@@ -1155,37 +1201,31 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                             )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex space-x-2">
-                                                {voter.sheema && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-50 text-purple-700 border border-purple-100">
-                                                        Sheema
-                                                    </span>
-                                                )}
-                                                {voter.sadiq && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                                        Shadda
-                                                    </span>
-                                                )}
-                                                {voter.rRoshi && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-rose-50 text-rose-700 border border-rose-100">
-                                                        R-Roshi
-                                                    </span>
-                                                )}
+                                            <div className="flex space-x-2 overflow-x-auto max-w-xs scrollbar-hide">
+                                                {CANDIDATES.map(candidate => {
+                                                    // Check visibility permission
+                                                    const viewPermId = getCandidateViewPermission(candidate.id);
+                                                    if (viewPermId && !hasPermission(viewPermId)) return null;
+
+                                                    // Check if supported (either via boolean or array)
+                                                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                                                    const isSupported = (voter as any)[candidate.id] || voter.candidateSupport?.some(c => c.candidateId === candidate.id);
+                                                    
+                                                    if (!isSupported) return null;
+
+                                                    return (
+                                                        <span key={candidate.id} className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-${candidate.color}-50 text-${candidate.color}-700 border border-${candidate.color}-100 whitespace-nowrap`}>
+                                                            {candidate.label}
+                                                        </span>
+                                                    );
+                                                })}
+                                                
                                                 {voter.communicated && (
                                                     <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100">
                                                         Comm.
                                                     </span>
                                                 )}
-                                                {voter.shfaa && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-teal-50 text-teal-700 border border-teal-100">
-                                                        Shafaa
-                                                    </span>
-                                                )}
-                                                {voter.mashey && (
-                                                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-cyan-50 text-cyan-700 border border-cyan-100">
-                                                        Mashey
-                                                    </span>
-                                                )}
+                                                
                                                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-50 text-gray-600 border border-gray-100">
                                                     {voter.registrarParty || 'Independent'}
                                                 </span>
@@ -1503,11 +1543,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                             const isSelected = candidateSupport.some(c => c.candidateId === candidate.id);
                                             const supportData = candidateSupport.find(c => c.candidateId === candidate.id);
                                             const error = errors[`comment_${candidate.id}`];
+                                            
+                                            // Check visibility permission
+                                            const viewPermId = getCandidateViewPermission(candidate.id);
+                                            if (viewPermId && !hasPermission(viewPermId)) return null;
+
+                                            const permId = getCandidatePermission(candidate.id);
+                                            const canEdit = !permId || hasPermission(permId);
+                                            const isDisabled = isReadOnlyMode || !canEdit;
 
                                             return (
-                                                <div key={candidate.id} className={`border rounded-xl p-2.5 transition-all duration-300 ${isSelected ? `bg-${candidate.color}-50 border-${candidate.color}-200 shadow-sm` : 'bg-white/50 border-gray-100 hover:border-gray-200'}`}>
+                                                <div key={candidate.id} className={`border rounded-xl p-2.5 transition-all duration-300 ${isSelected ? `bg-${candidate.color}-50 border-${candidate.color}-200 shadow-sm` : 'bg-white/50 border-gray-100 hover:border-gray-200'} ${isDisabled ? 'opacity-60 cursor-not-allowed' : ''}`}>
                                                     <div className="flex items-center justify-between">
-                                                        <div className="flex items-center gap-3 cursor-pointer w-full" onClick={() => toggleCandidate(candidate.id)}>
+                                                        <div className={`flex items-center gap-3 w-full ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`} onClick={() => !isDisabled && toggleCandidate(candidate.id)}>
                                                             <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSelected ? `bg-${candidate.color}-500 border-${candidate.color}-500` : 'border-gray-300 bg-white'}`}>
                                                                 {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
                                                             </div>
@@ -1529,7 +1577,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                                                     placeholder={`Comment for ${candidate.label}...`}
                                                                     className={`w-full text-[11px] p-2 rounded-lg border bg-white focus:bg-white transition-all outline-none resize-none ${error ? 'border-red-300 focus:border-red-400 ring-1 ring-red-100' : `border-${candidate.color}-200 focus:border-${candidate.color}-400`}`}
                                                                     rows={2}
-                                                                    disabled={isReadOnlyMode}
+                                                                    disabled={isDisabled}
                                                                 />
                                                                 {error && <p className="text-[10px] text-red-500 mt-1 flex items-center"><AlertTriangle className="w-3 h-3 mr-1"/> {error}</p>}
                                                             </motion.div>

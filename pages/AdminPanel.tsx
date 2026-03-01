@@ -99,14 +99,30 @@ const PERMISSIONS: Record<string, {id: Permission, label: string}[]> = {
         { id: 'edit_voter_notes', label: 'Edit Notepad' },
         { id: 'edit_voter_shafaa', label: 'Shafaa check box' },
         { id: 'edit_voter_mashey', label: 'Mashey check box' },
-        { id: 'edit_voter_zuheyru', label: 'Zuheyru check box' },
-        { id: 'edit_voter_mahfooz', label: 'Mahfooz check box' },
-        { id: 'edit_voter_faiga', label: 'Faiga check box' },
-        { id: 'edit_voter_jabir', label: 'Jabir check box' },
-        { id: 'edit_voter_mihana', label: 'Mihana check box' },
-        { id: 'edit_voter_zahura', label: 'Zahura check box' },
-        { id: 'edit_voter_zulaikha', label: 'Zulaikha check box' },
-        { id: 'edit_voter_sodhiq', label: 'Sodhiq check box' },
+        
+        { id: 'view_form_candidate_zuheyru', label: 'Show Zuheyru Checkbox' },
+        { id: 'edit_voter_zuheyru', label: 'Edit Zuheyru Checkbox' },
+        
+        { id: 'view_form_candidate_mahfooz', label: 'Show Mahfooz Checkbox' },
+        { id: 'edit_voter_mahfooz', label: 'Edit Mahfooz Checkbox' },
+        
+        { id: 'view_form_candidate_faiga', label: 'Show Faiga Checkbox' },
+        { id: 'edit_voter_faiga', label: 'Edit Faiga Checkbox' },
+        
+        { id: 'view_form_candidate_jabir', label: 'Show Jabir Checkbox' },
+        { id: 'edit_voter_jabir', label: 'Edit Jabir Checkbox' },
+        
+        { id: 'view_form_candidate_mihana', label: 'Show Mihana Checkbox' },
+        { id: 'edit_voter_mihana', label: 'Edit Mihana Checkbox' },
+        
+        { id: 'view_form_candidate_zahura', label: 'Show Zahura Checkbox' },
+        { id: 'edit_voter_zahura', label: 'Edit Zahura Checkbox' },
+        
+        { id: 'view_form_candidate_zulaikha', label: 'Show Zulaikha Checkbox' },
+        { id: 'edit_voter_zulaikha', label: 'Edit Zulaikha Checkbox' },
+        
+        { id: 'view_form_candidate_sodhiq', label: 'Show Sodhiq Checkbox' },
+        { id: 'edit_voter_sodhiq', label: 'Edit Sodhiq Checkbox' },
     ],
     CANDIDATE_ACTIONS: [
         { id: 'action_create_candidate', label: 'Create New Candidate' },
