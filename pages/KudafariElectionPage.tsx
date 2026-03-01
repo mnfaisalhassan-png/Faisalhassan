@@ -89,7 +89,7 @@ interface KudafariElectionPageProps {
 export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ currentUser, onVoterClick }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | null>(null);
+  const [activeFilter, setActiveFilter] = useState<'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'zuheyru' | 'mahfooz' | 'faiga' | 'jabir' | 'mihana' | 'zahura' | 'zulaikha' | 'sodhiq' | null>(null);
   const [selectedIsland, setSelectedIsland] = useState<string | null>(null);
   const [selectedParty, setSelectedParty] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
@@ -185,10 +185,29 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
   const shaddaStats = calculateCandidateStats(v => v.sadiq);
   const rRoisStats = calculateCandidateStats(v => v.rRoshi);
   const rfSeemaStats = calculateCandidateStats(v => v.rRoshi && v.sheema);
+  
+  const zuheyruStats = calculateCandidateStats(v => v.zuheyru);
+  const mahfoozStats = calculateCandidateStats(v => v.mahfooz);
+  const faigaStats = calculateCandidateStats(v => v.faiga);
+  const jabirStats = calculateCandidateStats(v => v.jabir);
+  const mihanaStats = calculateCandidateStats(v => v.mihana);
+  const zahuraStats = calculateCandidateStats(v => v.zahura);
+  const zulaikhaStats = calculateCandidateStats(v => v.zulaikha);
+  const sodhiqStats = calculateCandidateStats(v => v.sodhiq);
+
   const seemaOverallPct = totalVoters > 0 ? Math.round((seemaStats.total / totalVoters) * 100) : 0;
   const shaddaOverallPct = totalVoters > 0 ? Math.round((shaddaStats.total / totalVoters) * 100) : 0;
   const rRoisOverallPct = totalVoters > 0 ? Math.round((rRoisStats.total / totalVoters) * 100) : 0;
   const rfSeemaOverallPct = totalVoters > 0 ? Math.round((rfSeemaStats.total / totalVoters) * 100) : 0;
+  
+  const zuheyruOverallPct = totalVoters > 0 ? Math.round((zuheyruStats.total / totalVoters) * 100) : 0;
+  const mahfoozOverallPct = totalVoters > 0 ? Math.round((mahfoozStats.total / totalVoters) * 100) : 0;
+  const faigaOverallPct = totalVoters > 0 ? Math.round((faigaStats.total / totalVoters) * 100) : 0;
+  const jabirOverallPct = totalVoters > 0 ? Math.round((jabirStats.total / totalVoters) * 100) : 0;
+  const mihanaOverallPct = totalVoters > 0 ? Math.round((mihanaStats.total / totalVoters) * 100) : 0;
+  const zahuraOverallPct = totalVoters > 0 ? Math.round((zahuraStats.total / totalVoters) * 100) : 0;
+  const zulaikhaOverallPct = totalVoters > 0 ? Math.round((zulaikhaStats.total / totalVoters) * 100) : 0;
+  const sodhiqOverallPct = totalVoters > 0 ? Math.round((sodhiqStats.total / totalVoters) * 100) : 0;
 
   // Group by Island
   const islandStats = voters.reduce((acc, curr) => {
@@ -209,6 +228,14 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
         if (activeFilter === 'shadda' && !v.sadiq) return false;
         if (activeFilter === 'rRois' && !v.rRoshi) return false;
         if (activeFilter === 'rfSeema' && (!v.rRoshi || !v.sheema)) return false; 
+        if (activeFilter === 'zuheyru' && !v.zuheyru) return false;
+        if (activeFilter === 'mahfooz' && !v.mahfooz) return false;
+        if (activeFilter === 'faiga' && !v.faiga) return false;
+        if (activeFilter === 'jabir' && !v.jabir) return false;
+        if (activeFilter === 'mihana' && !v.mihana) return false;
+        if (activeFilter === 'zahura' && !v.zahura) return false;
+        if (activeFilter === 'zulaikha' && !v.zulaikha) return false;
+        if (activeFilter === 'sodhiq' && !v.sodhiq) return false;
         if (activeFilter === 'male' && v.gender !== 'Male') return false;
         if (activeFilter === 'female' && v.gender !== 'Female') return false;
         if (activeFilter === 'voted' && !v.hasVoted) return false;
@@ -234,6 +261,14 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
         case 'shadda': return { title: 'Shadda Voters List', icon: <ShieldCheck className="mr-2 h-5 w-5 text-indigo-600"/> };
         case 'rRois': return { title: 'R-Rois Voters List', icon: <Star className="mr-2 h-5 w-5 text-orange-600"/> };
         case 'rfSeema': return { title: 'RF - Seema Voters List', icon: <HeartHandshake className="mr-2 h-5 w-5 text-pink-600"/> };
+        case 'zuheyru': return { title: 'Zuheyru Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-blue-600"/> };
+        case 'mahfooz': return { title: 'Mahfooz Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-green-600"/> };
+        case 'faiga': return { title: 'Faiga Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-pink-600"/> };
+        case 'jabir': return { title: 'Jabir Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-purple-600"/> };
+        case 'mihana': return { title: 'Mihana Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-orange-600"/> };
+        case 'zahura': return { title: 'Zahura Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-rose-600"/> };
+        case 'zulaikha': return { title: 'Zulaikha Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-indigo-600"/> };
+        case 'sodhiq': return { title: 'Sodhiq Voters List', icon: <CheckSquare className="mr-2 h-5 w-5 text-teal-600"/> };
         case 'male': return { title: 'Male Voters List', icon: <Users className="mr-2 h-5 w-5 text-blue-600"/> };
         case 'female': return { title: 'Female Voters List', icon: <Users className="mr-2 h-5 w-5 text-pink-600"/> };
         case 'total': return { title: 'Total Voters List', icon: <Users className="mr-2 h-5 w-5 text-slate-600"/> };
@@ -243,7 +278,7 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
     }
   };
 
-  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female') => {
+  const handleFilterClick = (filter: 'seema' | 'shadda' | 'rRois' | 'rfSeema' | 'total' | 'voted' | 'pending' | 'male' | 'female' | 'zuheyru' | 'mahfooz' | 'faiga' | 'jabir' | 'mihana' | 'zahura' | 'zulaikha' | 'sodhiq') => {
       setSelectedIsland(null);
       setSelectedParty(null);
       setActiveFilter(filter);
@@ -561,6 +596,94 @@ export const KudafariElectionPage: React.FC<KudafariElectionPageProps> = ({ curr
                 icon={HeartHandshake} 
                 color="pink" 
                 onClick={() => handleFilterClick('rfSeema')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_zuheyru') && (
+              <StatCard 
+                title="Zuheyru Selections" 
+                value={zuheyruStats.total} 
+                subValue={`${zuheyruOverallPct}%`}
+                icon={CheckSquare} 
+                color="blue" 
+                onClick={() => handleFilterClick('zuheyru')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_mahfooz') && (
+              <StatCard 
+                title="Mahfooz Selections" 
+                value={mahfoozStats.total} 
+                subValue={`${mahfoozOverallPct}%`}
+                icon={CheckSquare} 
+                color="green" 
+                onClick={() => handleFilterClick('mahfooz')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_faiga') && (
+              <StatCard 
+                title="Faiga Selections" 
+                value={faigaStats.total} 
+                subValue={`${faigaOverallPct}%`}
+                icon={CheckSquare} 
+                color="pink" 
+                onClick={() => handleFilterClick('faiga')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_jabir') && (
+              <StatCard 
+                title="Jabir Selections" 
+                value={jabirStats.total} 
+                subValue={`${jabirOverallPct}%`}
+                icon={CheckSquare} 
+                color="purple" 
+                onClick={() => handleFilterClick('jabir')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_mihana') && (
+              <StatCard 
+                title="Mihana Selections" 
+                value={mihanaStats.total} 
+                subValue={`${mihanaOverallPct}%`}
+                icon={CheckSquare} 
+                color="orange" 
+                onClick={() => handleFilterClick('mihana')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_zahura') && (
+              <StatCard 
+                title="Zahura Selections" 
+                value={zahuraStats.total} 
+                subValue={`${zahuraOverallPct}%`}
+                icon={CheckSquare} 
+                color="rose" 
+                onClick={() => handleFilterClick('zahura')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_zulaikha') && (
+              <StatCard 
+                title="Zulaikha Selections" 
+                value={zulaikhaStats.total} 
+                subValue={`${zulaikhaOverallPct}%`}
+                icon={CheckSquare} 
+                color="indigo" 
+                onClick={() => handleFilterClick('zulaikha')}
+              />
+          )}
+
+          {hasPermission('view_metric_candidate_sodhiq') && (
+              <StatCard 
+                title="Sodhiq Selections" 
+                value={sodhiqStats.total} 
+                subValue={`${sodhiqOverallPct}%`}
+                icon={CheckSquare} 
+                color="teal" 
+                onClick={() => handleFilterClick('sodhiq')}
               />
           )}
       </div>
