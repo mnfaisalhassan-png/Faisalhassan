@@ -65,6 +65,11 @@ export type Voter = {
     notepad?: string;
 };
 
+export interface CandidateSupport {
+  candidateId: string;
+  comment: string;
+}
+
 export interface VoterRecord {
   id: string;
   idCardNumber: string; // Must start with A
@@ -82,6 +87,15 @@ export interface VoterRecord {
   communicated?: boolean;
   shfaa?: boolean;
   mashey?: boolean;
+  zuheyru?: boolean;
+  mahfooz?: boolean;
+  faiga?: boolean;
+  jabir?: boolean;
+  mihana?: boolean;
+  zahura?: boolean;
+  zulaikha?: boolean;
+  sodhiq?: boolean;
+  candidateSupport?: CandidateSupport[];
   notes?: string | string[];
   createdAt: number;
   updatedAt: number;
@@ -164,9 +178,25 @@ export const ALL_PERMISSIONS = [
   'action_delete_announcement',
   'view_metric_candidate_shafaa',
   'view_metric_candidate_mashey',
+  'view_metric_candidate_zuheyru',
+  'view_metric_candidate_mahfooz',
+  'view_metric_candidate_faiga',
+  'view_metric_candidate_jabir',
+  'view_metric_candidate_mihana',
+  'view_metric_candidate_zahura',
+  'view_metric_candidate_zulaikha',
+  'view_metric_candidate_sodhiq',
   'view_metric_voting_box_number',
   'edit_voter_shafaa',
   'edit_voter_mashey',
+  'edit_voter_zuheyru',
+  'edit_voter_mahfooz',
+  'edit_voter_faiga',
+  'edit_voter_jabir',
+  'edit_voter_mihana',
+  'edit_voter_zahura',
+  'edit_voter_zulaikha',
+  'edit_voter_sodhiq',
   'edit_voting_box_number',
   'action_create_candidate',
   'action_view_candidate',

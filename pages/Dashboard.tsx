@@ -1,22 +1,38 @@
 
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { User, VoterRecord } from '../types';
+import { User, VoterRecord, CandidateSupport } from '../types';
 import { storageService } from '../services/storage';
 import { Button } from '../components/ui/Button';
 import { Input } from '../components/ui/Input';
 import { Modal } from '../components/ui/Modal';
 import { MemberDetailsModal } from '../components/MemberDetailsModal';
 import { ConfirmationModal } from '../components/ui/ConfirmationModal';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, Plus, Save, Trash2, Edit2, Eye,
   CheckCircle, MapPin, 
   User as UserIcon, AlertTriangle, 
   Info, X, ArrowLeft, ChevronRight,
-  ShieldCheck,
   Download, FileSpreadsheet, Printer, Mic, MicOff,
-  Home, List, Sparkles, Phone, Award, Fingerprint, Map, StickyNote,
+  Home, List, Phone, Award, Fingerprint, Map, StickyNote,
   Flag, MessageCircle, Settings, Terminal
 } from 'lucide-react';
+
+const CANDIDATES = [
+  { id: 'sheema', label: 'Sheema', color: 'purple' },
+  { id: 'sadiq', label: 'Shadda', color: 'indigo' },
+  { id: 'rRoshi', label: 'R-Roshi', color: 'rose' },
+  { id: 'shfaa', label: 'Shafaa', color: 'teal' },
+  { id: 'mashey', label: 'Mashey', color: 'cyan' },
+  { id: 'zuheyru', label: 'Zuheyru', color: 'blue' },
+  { id: 'mahfooz', label: 'Mahfooz', color: 'green' },
+  { id: 'faiga', label: 'Faiga', color: 'pink' },
+  { id: 'jabir', label: 'Jabir', color: 'purple' },
+  { id: 'mihana', label: 'Mihana', color: 'orange' },
+  { id: 'zahura', label: 'Zahura', color: 'rose' },
+  { id: 'zulaikha', label: 'Zulaikha', color: 'indigo' },
+  { id: 'sodhiq', label: 'Sodhiq', color: 'teal' },
+];
 
 // Define window interface for SpeechRecognition to avoid 'any' type
 interface WindowWithSpeechRecognition extends Window {
@@ -67,12 +83,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   
   // New Fields
   const [registrarParty, setRegistrarParty] = useState('');
-  const [sheema, setSheema] = useState(false);
-  const [sadiq, setSadiq] = useState(false);
-  const [rRoshi, setRRoshi] = useState(false);
   const [communicated, setCommunicated] = useState(false);
-  const [shfaa, setShfaa] = useState(false);
-  const [mashey, setMashey] = useState(false);
+  const [candidateSupport, setCandidateSupport] = useState<CandidateSupport[]>([]);
   const [notes, setNotes] = useState('');
   const [noteInput, setNoteInput] = useState(''); // New state for individual note input
 
@@ -159,12 +171,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
   const canEditVotingBox = hasPermission('edit_voting_box_number');
   
   // Granular Campaign Permissions (with backward compatibility fallback)
-  const canEditSheema = hasPermission('edit_voter_sheema') || hasPermission('edit_voter_campaign');
-  const canEditShadda = hasPermission('edit_voter_shadda') || hasPermission('edit_voter_campaign');
-  const canEditRRoshi = hasPermission('edit_voter_rroshi') || hasPermission('edit_voter_campaign');
   const canEditCommunicated = hasPermission('edit_voter_communicated') || hasPermission('edit_voter_campaign');
-  const canEditShafaa = hasPermission('edit_voter_shafaa');
-  const canEditMashey = hasPermission('edit_voter_mashey');
 
   // Read Only Mode Logic:
   // If creating new -> Not read only (assuming you can create)
@@ -466,12 +473,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setHasVoted(false);
     setVotingBoxNumber('');
     setRegistrarParty(parties[0]?.name || '');
-    setSheema(false);
-    setSadiq(false);
-    setRRoshi(false);
     setCommunicated(false);
-    setShfaa(false);
-    setMashey(false);
+    setCandidateSupport([]);
     setNotes('');
     setNoteInput('');
     setErrors({});
@@ -496,12 +499,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
     setHasVoted(voter.hasVoted);
     setVotingBoxNumber(voter.votingBoxNumber || '');
     setRegistrarParty(voter.registrarParty || parties[0]?.name || '');
-    setSheema(voter.sheema || false);
-    setSadiq(voter.sadiq || false);
-    setRRoshi(voter.rRoshi || false);
     setCommunicated(voter.communicated || false);
-    setShfaa(voter.shfaa || false);
-    setMashey(voter.mashey || false);
+    
+    // Populate Candidate Support (with migration fallback)
+    const support = voter.candidateSupport ? [...voter.candidateSupport] : [];
+    if (support.length === 0) {
+        if (voter.sheema) support.push({ candidateId: 'sheema', comment: '' });
+        if (voter.sadiq) support.push({ candidateId: 'sadiq', comment: '' });
+        if (voter.rRoshi) support.push({ candidateId: 'rRoshi', comment: '' });
+        if (voter.shfaa) support.push({ candidateId: 'shfaa', comment: '' });
+        if (voter.mashey) support.push({ candidateId: 'mashey', comment: '' });
+        if (voter.zuheyru) support.push({ candidateId: 'zuheyru', comment: '' });
+        if (voter.mahfooz) support.push({ candidateId: 'mahfooz', comment: '' });
+        if (voter.faiga) support.push({ candidateId: 'faiga', comment: '' });
+        if (voter.jabir) support.push({ candidateId: 'jabir', comment: '' });
+        if (voter.mihana) support.push({ candidateId: 'mihana', comment: '' });
+        if (voter.zahura) support.push({ candidateId: 'zahura', comment: '' });
+        if (voter.zulaikha) support.push({ candidateId: 'zulaikha', comment: '' });
+        if (voter.sodhiq) support.push({ candidateId: 'sodhiq', comment: '' });
+    }
+    setCandidateSupport(support);
+
     setNotes(voter.notes || '');
     setErrors({});
     setViewMode('form'); // Switch to form view
@@ -562,8 +580,45 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
         }
     }
 
+    // Validate Candidate Comments
+    candidateSupport.forEach(support => {
+        if (!support.comment || !support.comment.trim()) {
+            newErrors[`comment_${support.candidateId}`] = 'Comment is required.';
+        }
+    });
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const toggleCandidate = (candidateId: string) => {
+    if (isReadOnlyMode) return;
+    
+    setCandidateSupport(prev => {
+      const exists = prev.find(c => c.candidateId === candidateId);
+      if (exists) {
+        return prev.filter(c => c.candidateId !== candidateId);
+      } else {
+        return [...prev, { candidateId, comment: '' }];
+      }
+    });
+  };
+
+  const updateCandidateComment = (candidateId: string, comment: string) => {
+    if (isReadOnlyMode) return;
+    
+    setCandidateSupport(prev => prev.map(c => 
+      c.candidateId === candidateId ? { ...c, comment } : c
+    ));
+    
+    // Clear error if comment is added
+    if (comment.trim()) {
+        setErrors(prev => {
+            const newErrors = { ...prev };
+            delete newErrors[`comment_${candidateId}`];
+            return newErrors;
+        });
+    }
   };
 
   const confirmSave = async () => {
@@ -578,12 +633,23 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
             hasVoted,
             votingBoxNumber,
             registrarParty,
-            sheema,
-            sadiq,
-            rRoshi,
             communicated,
-            shfaa,
-            mashey,
+            candidateSupport,
+            // Map back to boolean fields for backward compatibility
+            sheema: candidateSupport.some(c => c.candidateId === 'sheema'),
+            sadiq: candidateSupport.some(c => c.candidateId === 'sadiq'),
+            rRoshi: candidateSupport.some(c => c.candidateId === 'rRoshi'),
+            shfaa: candidateSupport.some(c => c.candidateId === 'shfaa'),
+            mashey: candidateSupport.some(c => c.candidateId === 'mashey'),
+            zuheyru: candidateSupport.some(c => c.candidateId === 'zuheyru'),
+            mahfooz: candidateSupport.some(c => c.candidateId === 'mahfooz'),
+            faiga: candidateSupport.some(c => c.candidateId === 'faiga'),
+            jabir: candidateSupport.some(c => c.candidateId === 'jabir'),
+            mihana: candidateSupport.some(c => c.candidateId === 'mihana'),
+            zahura: candidateSupport.some(c => c.candidateId === 'zahura'),
+            zulaikha: candidateSupport.some(c => c.candidateId === 'zulaikha'),
+            sodhiq: candidateSupport.some(c => c.candidateId === 'sodhiq'),
+            
             notes, // Saves as comma separated string
             createdAt: Date.now(),
             updatedAt: Date.now()
@@ -1409,35 +1475,69 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                                         </div>
                                     </div>
 
-                                    {/* Compact Chips Grid */}
-                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                        {[
-                                            { label: 'Sheema', state: sheema, setter: setSheema, color: 'purple', icon: Sparkles, perm: canEditSheema },
-                                            { label: 'Shadda', state: sadiq, setter: setSadiq, color: 'indigo', icon: ShieldCheck, perm: canEditShadda },
-                                            { label: 'R-Roshi', state: rRoshi, setter: setRRoshi, color: 'rose', icon: Award, perm: canEditRRoshi },
-                                            { label: 'Comm.', state: communicated, setter: setCommunicated, color: 'orange', icon: MessageCircle, perm: canEditCommunicated },
-                                            { label: 'Shafaa', state: shfaa, setter: setShfaa, color: 'teal', icon: Sparkles, perm: canEditShafaa },
-                                            { label: 'Mashey', state: mashey, setter: setMashey, color: 'cyan', icon: Sparkles, perm: canEditMashey },
-                                        ].map((item) => (
-                                            <button
-                                                key={item.label}
-                                                type="button"
-                                                onClick={() => !isReadOnlyMode && item.perm && item.setter(!item.state)}
-                                                disabled={isReadOnlyMode || !item.perm}
-                                                className={`
-                                                    relative group flex items-center justify-center px-2 py-1.5 rounded-lg text-[10px] font-bold transition-all duration-300 border
-                                                    ${item.state 
-                                                        ? `bg-${item.color}-100 border-${item.color}-300 text-${item.color}-700 shadow-sm` 
-                                                        : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
-                                                    }
-                                                    ${isReadOnlyMode || !item.perm ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                                                `}
-                                            >
-                                                <item.icon className={`w-3 h-3 mr-1 ${item.state ? 'opacity-100' : 'opacity-50'}`} />
-                                                {item.label}
-                                                {item.state && <span className={`absolute top-0.5 right-0.5 w-1 h-1 rounded-full bg-${item.color}-500 animate-pulse`}></span>}
-                                            </button>
-                                        ))}
+
+
+                                    {/* Communicated Toggle */}
+                                    <div className="mb-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => !isReadOnlyMode && canEditCommunicated && setCommunicated(!communicated)}
+                                            disabled={isReadOnlyMode || !canEditCommunicated}
+                                            className={`
+                                                flex items-center justify-center px-3 py-2 rounded-lg text-xs font-bold transition-all duration-300 border w-full
+                                                ${communicated 
+                                                    ? 'bg-orange-100 border-orange-300 text-orange-700 shadow-sm' 
+                                                    : 'bg-white border-gray-200 text-gray-500 hover:border-gray-300'
+                                                }
+                                                ${isReadOnlyMode || !canEditCommunicated ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                                            `}
+                                        >
+                                            <MessageCircle className={`w-3.5 h-3.5 mr-2 ${communicated ? 'opacity-100' : 'opacity-50'}`} />
+                                            Communicated
+                                        </button>
+                                    </div>
+
+                                    {/* Candidate Support List */}
+                                    <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                                        {CANDIDATES.map(candidate => {
+                                            const isSelected = candidateSupport.some(c => c.candidateId === candidate.id);
+                                            const supportData = candidateSupport.find(c => c.candidateId === candidate.id);
+                                            const error = errors[`comment_${candidate.id}`];
+
+                                            return (
+                                                <div key={candidate.id} className={`border rounded-xl p-2.5 transition-all duration-300 ${isSelected ? `bg-${candidate.color}-50 border-${candidate.color}-200 shadow-sm` : 'bg-white/50 border-gray-100 hover:border-gray-200'}`}>
+                                                    <div className="flex items-center justify-between">
+                                                        <div className="flex items-center gap-3 cursor-pointer w-full" onClick={() => toggleCandidate(candidate.id)}>
+                                                            <div className={`w-4 h-4 rounded border flex items-center justify-center transition-colors shrink-0 ${isSelected ? `bg-${candidate.color}-500 border-${candidate.color}-500` : 'border-gray-300 bg-white'}`}>
+                                                                {isSelected && <CheckCircle className="w-3 h-3 text-white" />}
+                                                            </div>
+                                                            <span className={`text-xs font-semibold ${isSelected ? `text-${candidate.color}-900` : 'text-gray-600'}`}>{candidate.label}</span>
+                                                        </div>
+                                                    </div>
+
+                                                    <AnimatePresence>
+                                                        {isSelected && (
+                                                            <motion.div
+                                                                initial={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                                animate={{ height: 'auto', opacity: 1, marginTop: 8 }}
+                                                                exit={{ height: 0, opacity: 0, marginTop: 0 }}
+                                                                className="overflow-hidden pl-7"
+                                                            >
+                                                                <textarea
+                                                                    value={supportData?.comment || ''}
+                                                                    onChange={(e) => updateCandidateComment(candidate.id, e.target.value)}
+                                                                    placeholder={`Comment for ${candidate.label}...`}
+                                                                    className={`w-full text-[11px] p-2 rounded-lg border bg-white focus:bg-white transition-all outline-none resize-none ${error ? 'border-red-300 focus:border-red-400 ring-1 ring-red-100' : `border-${candidate.color}-200 focus:border-${candidate.color}-400`}`}
+                                                                    rows={2}
+                                                                    disabled={isReadOnlyMode}
+                                                                />
+                                                                {error && <p className="text-[10px] text-red-500 mt-1 flex items-center"><AlertTriangle className="w-3 h-3 mr-1"/> {error}</p>}
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
+                                                </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
 
@@ -1619,12 +1719,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser, initialVoterI
                         <div><span className="text-gray-500">ID:</span> {idCardNumber}</div>
                         <div><span className="text-gray-500">Gender:</span> {gender || '-'}</div>
                         <div><span className="text-gray-500">Party:</span> {registrarParty}</div>
-                        <div><span className="text-gray-500">Sheema:</span> {sheema ? 'Yes' : 'No'}</div>
-                        <div><span className="text-gray-500">Shadda:</span> {sadiq ? 'Yes' : 'No'}</div>
-                        <div><span className="text-gray-500">R-Roshi:</span> {rRoshi ? 'Yes' : 'No'}</div>
+                        <div className="col-span-2">
+                            <span className="text-gray-500 block mb-1">Supported Candidates:</span>
+                            <div className="flex flex-wrap gap-1">
+                                {candidateSupport.length > 0 ? (
+                                    candidateSupport.map(c => {
+                                        const candidate = CANDIDATES.find(cand => cand.id === c.candidateId);
+                                        return (
+                                            <span key={c.candidateId} className={`px-1.5 py-0.5 rounded text-[10px] bg-${candidate?.color || 'gray'}-100 text-${candidate?.color || 'gray'}-800 border border-${candidate?.color || 'gray'}-200`}>
+                                                {candidate?.label || c.candidateId}
+                                            </span>
+                                        );
+                                    })
+                                ) : (
+                                    <span className="text-gray-400 italic text-xs">None</span>
+                                )}
+                            </div>
+                        </div>
                         <div><span className="text-gray-500">Communicated:</span> {communicated ? 'Yes' : 'No'}</div>
-                        <div><span className="text-gray-500">Shafaa:</span> {shfaa ? 'Yes' : 'No'}</div>
-                        <div><span className="text-gray-500">Mashey:</span> {mashey ? 'Yes' : 'No'}</div>
                         {notes && (
                             <div className="col-span-2 text-gray-500 italic mt-1 border-t pt-1">
                                 Notes: {notes.split(',').filter(Boolean).map(n => n.trim()).join(', ')}
