@@ -177,6 +177,7 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
   const [showBlockedModal, setShowBlockedModal] = useState(false);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
   
   // Form State
   const [username, setUsername] = useState('');
@@ -320,16 +321,24 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
       }
   };
 
-  const handleDelete = async (userId: string) => {
-    if (!isSuperAdmin) return;
-    if (!window.confirm('Are you sure you want to delete this user?')) return;
+  const handleDelete = async () => {
+    if (!isSuperAdmin || !deleteConfirmId) return;
+    const userId = deleteConfirmId;
+    setDeleteConfirmId(null);
+    
+    setProcessingUserId(userId);
     try {
         const userToDelete = users.find(u => u.id === userId);
+        if (!userToDelete) return;
+        
         await storageService.deleteUser(userId);
-        await storageService.createAuditLog('delete_user', `Deleted user: ${userToDelete?.username || 'Unknown'}`, currentUser);
+        await storageService.createAuditLog('delete_user', `Deleted user: ${userToDelete.username}`, currentUser);
         await refreshData();
     } catch (e) {
-        alert("Failed to delete: " + (e as Error).message);
+        console.error("Delete Error:", e);
+        alert("Failed to delete user: " + (e as Error).message);
+    } finally {
+        setProcessingUserId(null);
     }
   };
 
@@ -764,7 +773,13 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                                     )}
                                     
                                     {isSuperAdmin && user.username.toLowerCase() !== 'faisalhassan' && user.id !== currentUser.id && (
-                                        <button onClick={() => handleDelete(user.id)} className="text-red-600 hover:text-red-900 font-medium ml-1 text-[10px]">Delete</button>
+                                        <button 
+                                            onClick={() => setDeleteConfirmId(user.id)} 
+                                            disabled={processingUserId === user.id}
+                                            className="text-red-600 hover:text-red-900 font-medium ml-1 text-[10px] disabled:opacity-50"
+                                        >
+                                            {processingUserId === user.id ? <div className="w-3 h-3 border-2 border-t-transparent border-red-600 rounded-full animate-spin"></div> : 'Delete'}
+                                        </button>
                                     )}
                                 </div>
                             </td>
@@ -1083,6 +1098,30 @@ export const AdminPanel: React.FC<AdminPanelProps> = ({ currentUser }) => {
                 )}
             </div>
         </Modal>
+
+      {/* DELETE CONFIRMATION MODAL */}
+      <Modal
+        isOpen={!!deleteConfirmId}
+        onClose={() => setDeleteConfirmId(null)}
+        title="Confirm Delete User"
+        footer={
+            <>
+                <Button variant="secondary" onClick={() => setDeleteConfirmId(null)}>Cancel</Button>
+                <Button variant="danger" onClick={handleDelete}>Delete User</Button>
+            </>
+        }
+      >
+          <div className="flex flex-col items-center justify-center text-center p-4">
+              <div className="bg-red-100 p-3 rounded-full mb-4">
+                  <AlertTriangle className="h-6 w-6 text-red-600" />
+              </div>
+              <p className="text-gray-900 font-bold text-lg mb-2">Are you sure?</p>
+              <p className="text-gray-600">
+                  You are about to delete <span className="font-bold text-gray-900">@{users.find(u => u.id === deleteConfirmId)?.username}</span>. 
+                  This will also remove their messages, tasks, and notes. This action cannot be undone.
+              </p>
+          </div>
+      </Modal>
 
       {/* SCHEMA ERROR MODAL */}
       <Modal
