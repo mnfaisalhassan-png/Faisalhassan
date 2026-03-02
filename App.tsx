@@ -23,6 +23,7 @@ import { TasksPage } from './pages/TasksPage';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { CandidatesPage } from './pages/CandidatesPage';
+import { CandidatePerformancePage } from './pages/CandidatePerformancePage';
 import { Layout } from './components/Layout';
 
 
@@ -160,7 +161,7 @@ const App: React.FC = () => {
       // Candidates & Parties
       case 'candidates': return <CandidatesPage currentUser={user!} />;
       case 'party-distribution': return <RegistrarPartyPage currentUser={user!} />;
-      case 'candidate-performance': return <PlaceholderPage title="Candidate Performance" />;
+      case 'candidate-performance': return <CandidatePerformancePage currentUser={user!} />;
 
       // Results & Reports
       case 'real-time-results': return <PlaceholderPage title="Real-Time Results" />;
