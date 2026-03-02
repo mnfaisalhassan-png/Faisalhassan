@@ -46,6 +46,8 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
   const [permissionError, setPermissionError] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const isNearBottomRef = useRef(true);
 
   const checkForTableError = (error: { code?: string; message?: string }) => {
     // Check for Postgres undefined table (42P01) or PostgREST schema cache missing table (PGRST205)
@@ -67,7 +69,11 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
     if (mode !== 'community') return;
     try {
       const data = await storageService.getMessages(50);
-      setMessages(data);
+      setMessages(prev => {
+        // Simple check to avoid unnecessary updates if data is identical
+        if (JSON.stringify(prev) === JSON.stringify(data)) return prev;
+        return data;
+      });
       setDbError(false);
     } catch (error) {
       console.error("Failed to fetch messages", error);
@@ -88,14 +94,23 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
     }
   }, [dbError, mode, fetchMessages]);
 
-  const scrollToBottom = useCallback(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  const scrollToBottom = useCallback((force = false) => {
+    if (force || isNearBottomRef.current) {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }
   }, []);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages, aiMessages, mode, scrollToBottom]);
+
+  const handleScroll = () => {
+    if (!messagesContainerRef.current) return;
+    const { scrollTop, scrollHeight, clientHeight } = messagesContainerRef.current;
+    // Check if user is near bottom (within 100px)
+    isNearBottomRef.current = scrollHeight - scrollTop - clientHeight < 100;
+  };
 
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -105,7 +120,9 @@ export const ChatPage: React.FC<ChatPageProps> = ({ currentUser }) => {
     try {
       await storageService.sendMessage(currentUser.id, currentUser.fullName, newMessage.trim());
       setNewMessage('');
+      isNearBottomRef.current = true; // Force scroll on send
       await fetchMessages(); // Immediate refresh
+      scrollToBottom(true);
     } catch (error) {
       console.error("Failed to send message", error);
       checkForTableError(error as { code?: string; message?: string });
@@ -251,7 +268,7 @@ CREATE POLICY "Public Access Messages" ON messages FOR ALL USING (true) WITH CHE
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-6rem)] max-w-5xl mx-auto relative">
+    <div className="flex flex-col h-[calc(100vh-8.5rem)] max-w-5xl mx-auto relative">
       {/* Header */}
       <div className="bg-white border border-gray-200 rounded-t-xl p-4 flex items-center justify-between shadow-sm">
         <div className="flex items-center gap-4">
@@ -289,7 +306,11 @@ CREATE POLICY "Public Access Messages" ON messages FOR ALL USING (true) WITH CHE
       </div>
 
       {/* Messages Area */}
-      <div className="flex-1 bg-gray-50 border-x border-gray-200 overflow-y-auto p-4 space-y-4">
+      <div 
+        ref={messagesContainerRef}
+        onScroll={handleScroll}
+        className="flex-1 bg-gray-50 border-x border-gray-200 overflow-y-auto p-4 space-y-4"
+      >
         {mode === 'community' ? (
             isLoading ? (
                 <div className="flex justify-center items-center h-full">

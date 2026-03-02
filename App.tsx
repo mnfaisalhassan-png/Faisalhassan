@@ -225,7 +225,7 @@ const App: React.FC = () => {
             onNavigate={setCurrentPage} 
             onLogout={handleLogout}
           >
-            <div className="w-full h-full aspect-square">
+            <div className="w-full h-full">
               <Routes>
                 {currentPage === 'candidates' ? (
                   <>
