@@ -10,19 +10,18 @@ import { motion } from 'framer-motion';
 
 // Candidate Keys Mapping (from types.ts)
 const CANDIDATE_KEYS = [
-    { key: 'sheema', label: 'Sheema' },
-    { key: 'sadiq', label: 'Sadiq' },
-    { key: 'rRoshi', label: 'R-Roshi' },
-    { key: 'shfaa', label: 'Shafaa' },
-    { key: 'mashey', label: 'Mashey' },
-    { key: 'zuheyru', label: 'Zuheyru' },
+    { key: 'sheema', label: 'Seema Adam', party: "People's National Congress" },
+    { key: 'shfaa', label: 'Aishath Shafaza', party: "People's National Congress" },
+    { key: 'mashey', label: 'Aishath Masheea', party: "People's National Congress" },
+    { key: 'zuheyru', label: 'Mohamed Yoonus', party: "People's National Congress" },
+    { key: 'shadda', label: 'Shahudha Mohamed' },
     { key: 'mahfooz', label: 'Mahfooz' },
     { key: 'faiga', label: 'Faiga' },
     { key: 'jabir', label: 'Jabir' },
-    { key: 'mihana', label: 'Mihana' },
+    { key: 'mihana', label: 'Milhana Ibrahim', party: "Maldives Development Alliance", photoUrl: "https://ui-avatars.com/api/?name=Milhana+Ibrahim&background=random" },
     { key: 'zahura', label: 'Zahura' },
     { key: 'zulaikha', label: 'Zulaikha' },
-    { key: 'sodhiq', label: 'Sodhiq' },
+    { key: 'sodhiq', label: 'Sodhiq', party: "Independent" },
 ];
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57', '#ffc0cb', '#f4ca16', '#e91e63'];
@@ -73,10 +72,10 @@ export const CandidatePerformancePage: React.FC<CandidatePerformancePageProps> =
       return {
         key: c.key,
         name: dbCandidate ? dbCandidate.full_name : c.label,
-        party: dbCandidate?.represent_party?.name || 'Unknown',
+        party: dbCandidate?.represent_party?.name || c.party || 'Unknown',
         votes: count,
         percentage: votedCount > 0 ? (count / votedCount) * 100 : 0,
-        photoUrl: dbCandidate?.profile_picture_url
+        photoUrl: dbCandidate?.profile_picture_url || c.photoUrl
       };
     }).sort((a, b) => b.votes - a.votes);
 

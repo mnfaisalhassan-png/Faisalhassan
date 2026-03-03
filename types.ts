@@ -82,6 +82,7 @@ export interface VoterRecord {
   votingBoxNumber?: string;
   registrarParty?: string;
   sheema?: boolean;
+  shadda?: boolean;
   sadiq?: boolean;
   rRoshi?: boolean;
   communicated?: boolean;
