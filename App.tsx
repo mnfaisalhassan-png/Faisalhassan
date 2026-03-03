@@ -24,6 +24,8 @@ import { PlaceholderPage } from './pages/PlaceholderPage';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { CandidatesPage } from './pages/CandidatesPage';
 import { CandidatePerformancePage } from './pages/CandidatePerformancePage';
+import { HistoricalDataPage } from './pages/HistoricalDataPage';
+import { TurnoutAnalyticsPage } from './pages/TurnoutAnalyticsPage';
 import { Layout } from './components/Layout';
 
 
@@ -148,8 +150,8 @@ const App: React.FC = () => {
       // Dashboard
       case 'election-overview': return <ElectionOverview currentUser={user!} onVoterClick={handleVoterClick} />;
             case 'live-results': return <LiveResultsPage currentUser={user!} />;
-      case 'turnout-analytics': return <PlaceholderPage title="Turnout Analytics" />;
-            case 'quick-summary': return <QuickSummaryPage onNavigate={setCurrentPage} />;
+      case 'turnout-analytics': return <TurnoutAnalyticsPage />;
+      case 'quick-summary': return <QuickSummaryPage currentUser={user!} onNavigate={setCurrentPage} />;
 
       // Voter Management
       case 'voter-registry': return <VotersDirectoryPage currentUser={user!} initialVoterId={targetVoterId} onClearInitialVoter={() => setTargetVoterId(null)} />;
@@ -167,7 +169,7 @@ const App: React.FC = () => {
       case 'real-time-results': return <PlaceholderPage title="Real-Time Results" />;
       case 'detailed-reports': return <PlaceholderPage title="Detailed Reports" />;
       case 'export-results': return <PlaceholderPage title="Export Results" />;
-      case 'historical-data': return <PlaceholderPage title="Historical Data" />;
+      case 'historical-data': return <HistoricalDataPage />;
 
       // Communication
       case 'community-chat': 
