@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line, AreaChart, Area
+  PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import { 
-  Users, Vote, TrendingUp, MapPin, Calendar, Filter, Download, 
+  Users, Vote, TrendingUp, MapPin, Filter, 
   FileSpreadsheet, File as FileIcon, ArrowUpRight, ArrowDownRight, Activity 
 } from 'lucide-react';
 import { motion } from 'framer-motion';

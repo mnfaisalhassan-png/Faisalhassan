@@ -2,19 +2,18 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { 
   Users, Vote, TrendingUp, Activity, AlertTriangle, 
-  CheckCircle, Clock, ArrowRight, User
+  CheckCircle, ArrowRight, User
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell 
 } from 'recharts';
 import { storageService } from '../services/storage';
-import { VoterRecord, Candidate, AuditLog, PageView } from '../types';
+import { VoterRecord, AuditLog, PageView } from '../types';
 import { Button } from '../components/ui/Button';
 
 // --- Types ---
 
 interface QuickSummaryPageProps {
-  currentUser: any;
   onNavigate: (page: PageView) => void;
 }
 
@@ -83,14 +82,13 @@ const ActivityItem = ({ action, user, time }: { action: string, user: string, ti
   </div>
 );
 
-export const QuickSummaryPage: React.FC<QuickSummaryPageProps> = ({ currentUser, onNavigate }) => {
+export const QuickSummaryPage: React.FC<QuickSummaryPageProps> = ({ onNavigate }) => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
-  const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   // Candidate Keys Mapping (Must match CandidatePerformancePage)
-  const CANDIDATE_KEYS = [
+  const CANDIDATE_KEYS = useMemo(() => [
     { key: 'sheema', label: 'Seema Adam', party: "People's National Congress" },
     { key: 'shfaa', label: 'Aishath Shafaza', party: "People's National Congress" },
     { key: 'mashey', label: 'Aishath Masheea', party: "People's National Congress" },
@@ -103,18 +101,16 @@ export const QuickSummaryPage: React.FC<QuickSummaryPageProps> = ({ currentUser,
     { key: 'zahura', label: 'Zahura' },
     { key: 'zulaikha', label: 'Zulaikha' },
     { key: 'sodhiq', label: 'Sodhiq', party: "Independent" },
-  ];
+  ], []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [votersData, candidatesData, logsData] = await Promise.all([
+        const [votersData, logsData] = await Promise.all([
           storageService.getVoters(),
-          storageService.getCandidates(),
           storageService.getAuditLogs(5)
         ]);
         setVoters(votersData);
-        setCandidates(candidatesData);
         setAuditLogs(logsData);
       } catch (error) {
         console.error("Failed to fetch data", error);
@@ -177,7 +173,7 @@ export const QuickSummaryPage: React.FC<QuickSummaryPageProps> = ({ currentUser,
       candidateVotes,
       topIslands
     };
-  }, [voters]);
+  }, [voters, CANDIDATE_KEYS]);
 
   // --- Alerts Logic (Mock) ---
   const alerts = useMemo(() => {

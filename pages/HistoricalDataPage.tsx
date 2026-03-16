@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Archive, Calendar, Users, FileText, Clock, Download, Filter, 
-  Search, ChevronDown, FileSpreadsheet, File as FileIcon,
+  Archive, Users, FileText, Clock, Filter, 
+  Search, FileSpreadsheet, File as FileIcon,
   History, Shield, AlertCircle
 } from 'lucide-react';
 import { Button } from '../components/ui/Button';
@@ -80,19 +80,6 @@ const SummaryCard = ({ title, value, icon: Icon, subtext, color }: { title: stri
       <Icon className="h-6 w-6 text-white" />
     </div>
   </motion.div>
-);
-
-const FilterBadge = ({ label, active, onClick }: { label: string, active: boolean, onClick: () => void }) => (
-  <button
-    onClick={onClick}
-    className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-      active 
-        ? 'bg-indigo-100 text-indigo-700 border border-indigo-200' 
-        : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
-    }`}
-  >
-    {label}
-  </button>
 );
 
 export const HistoricalDataPage: React.FC = () => {

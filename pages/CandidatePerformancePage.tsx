@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, 
-  PieChart, Pie, Cell, LineChart, Line 
+  PieChart, Pie, Cell 
 } from 'recharts';
-import { Users, Trophy, TrendingUp, Vote, Activity, AlertCircle } from 'lucide-react';
+import { Users, Trophy, Vote, Activity, AlertCircle } from 'lucide-react';
 import { storageService } from '../services/storage';
 import { VoterRecord, Candidate } from '../types';
 import { motion } from 'framer-motion';
@@ -26,11 +26,7 @@ const CANDIDATE_KEYS = [
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8', '#82ca9d', '#ffc658', '#8dd1e1', '#a4de6c', '#d0ed57', '#ffc0cb', '#f4ca16', '#e91e63'];
 
-interface CandidatePerformancePageProps {
-  currentUser: any; // Using any to avoid strict type checking for now, but ideally User
-}
-
-export const CandidatePerformancePage: React.FC<CandidatePerformancePageProps> = ({ currentUser }) => {
+export const CandidatePerformancePage: React.FC = () => {
   const [voters, setVoters] = useState<VoterRecord[]>([]);
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [isLoading, setIsLoading] = useState(true);
